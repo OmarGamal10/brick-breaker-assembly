@@ -1,3 +1,4 @@
+# Ignore specific files
 .BIN2HEX.EXE
 .EXE2BIN.EXE
 .DEBUG.EXE
@@ -5,4 +6,7 @@
 .LINK.EXE
 .MASM.EXE
 .TASM.EXE
-.TD.EXEgi
+.TD.EXE
+
+# Ignore all .EXE files (optional)
+*.EXE
