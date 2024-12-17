@@ -7,7 +7,7 @@
       "command": "C:\\Program Files (x86)\\DOSBox-0.74-3\\DOSBox.exe", // Path to DOSBox executable
       "args": [
         "-c",
-        "mount C C:\\Users\\hp\\Desktop\\bar",
+        "mount C C:\\Assemblyx69",
         "-c",
         "C:",
         "-c",
