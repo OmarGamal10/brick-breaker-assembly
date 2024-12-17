@@ -99,21 +99,23 @@ MOVE_BALL ENDP
 CHECK_COLLISION PROC NEAR
 
     cmp BALL_X , 0
-        jle collision_x_left    ;check if x position is less than 0
+    jle collision_x_left    ;check if x position is less than 0
 
-        mov ax , BALL_X
-        add ax , BALL_SIZE
-        cmp ax , 320
-        jge collision_x_right ;check if x position is greater than 320
+    mov ax , BALL_X
+    add ax , BALL_SIZE
+    cmp ax , 320
+    jge collision_x_right ;check if x position is greater than 320
 
 
-        cmp BALL_Y , 0
-        jle collision_y_up      ;check if y position is less than 0
+    cmp BALL_Y , 0
+    jle collision_y_up      ;check if y position is less than 0
 
-        mov ax , BALL_Y
-        add ax , BALL_SIZE
-        cmp ax , 200
-        jge collision_y_down    ;check if y position is greater than 200
+    mov ax , BALL_Y
+    add ax , BALL_SIZE
+    cmp ax , 200
+    jge collision_y_down    ;check if y position is greater than 200
+
+    ; call CHECK_BRICKS_COLLISION
 
     ret
 
@@ -145,6 +147,48 @@ CHECK_COLLISION PROC NEAR
 
     ret
 CHECK_COLLISION ENDP
+
+; CHECK_BRICKS_COLLISION PROC near
+
+
+
+;     check_horizontal:
+;         mov ax , BALL_X
+;         cmp ax , cx
+;         jl next_horizontal
+;         mov ax , BALL_X
+;         add ax , BALL_SIZE
+;         cmp ax , cx
+;         jg next_horizontal
+;         mov ax , BALL_Y
+;         cmp ax , dx
+;         jl next_horizontal
+;         mov ax , BALL_Y
+;         add ax , BALL_SIZE
+;         cmp ax , dx
+;         jg next_horizontal
+;         mov BALL_VELOCITY_Y , -BALL_VELOCITY_Y
+;         ret
+
+;         next_horizontal:
+;             inc cx
+;             mov ax , BRICK_X
+;             add ax , BRICK_WIDTH
+;             cmp cx , ax
+;             jl check_horizontal
+;             mov cx , BRICK_X
+;             inc dx
+;             mov ax , BRICK_Y
+;             add ax , BRICK_HEIGHT
+;             cmp dx , ax
+;             jl check_horizontal
+
+;     ret
+
+
+; CHECK_BRICKS_COLLISION ENDP
+
+
 
 
 

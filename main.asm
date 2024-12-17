@@ -50,6 +50,7 @@ Main PROC FAR
                CALL         CHECK_COLLISION
                call         DRAW_BALL
                jmp          game_loop
+               
 
      exit:     
                mov          ax, 4c00h

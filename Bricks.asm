@@ -67,11 +67,12 @@ DRAW_BRICKS proc near
     push cx
     push dx
 
-    mov cx, NUM_BRICKS_PER_COLUMN  ; Outer loop counter (rows)
+    ; mov cx, 0  ; Outer loop counter (rows)
+    mov dx , 0
 outer_loop:
-    push cx                        ; Save the outer loop counter
+    ; push cx                        ; Save the outer loop counter
 
-    mov cx, NUM_BRICKS_PER_LINE    ; Inner loop counter (bricks per row)
+    mov cx, 0    ; Inner loop counter (bricks per row)
 inner_loop:
     call DRAW_BRICK         ; Draw one brick
     inc COLOR_BRICK                ; Change the color for the next brick
@@ -85,11 +86,14 @@ next:
     add ax, BRICK_WIDTH            ; Add the brick width
     add ax, Gap                      ; Add the horizontal gap
     mov BRICK_X, ax                ; Update BRICK_X position
-    loop inner_loop                ; Continue drawing bricks in the row
+    inc cx
+    cmp cx , NUM_BRICKS_PER_LINE
+    jl inner_loop                ; Continue drawing bricks in the row
 
-    pop cx                         ; Restore the outer loop counter
-    dec cx                         ; Move to the next row
-    jz done                        ; If all rows are drawn, exit
+    ; pop cx                         ; Restore the outer loop counter
+    inc  dx 
+    cmp dx ,NUM_BRICKS_PER_COLUMN                        ; Move to the next row
+    je done                        ; If all rows are drawn, exit
 
     mov ax, BRICK_Y                ; Move to the next row vertically
     add ax, BRICK_HEIGHT           ; Add the brick height
