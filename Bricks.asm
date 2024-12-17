@@ -12,7 +12,7 @@ BRICK_WIDTH dw 1ah  ; brick width 26 pixels
 BRICK_HEIGHT dw 0fh
 COLOR_BRICK db 01h ; color of the brick
 Gap EQu 4 
-BRICKS_STATUS db NUM_BRICKS_PER_COLUMN * NUM_BRICKS_PER_LINE dup(1)
+BRICKS_STATUS db 40 dup(1) ; 40 bricks
 
 
     ;screen format    | 10 26 4 26 4 ......26 10|   each 26 is the brick and 4 is the gap between bricks and there is padding 10 pixels 
@@ -74,7 +74,28 @@ outer_loop:
 
     mov cx, 0    ; Inner loop counter (bricks per row)
 inner_loop:
+
+     ; Step 1: Calculate the Linear Index
+     push dx
+    mov ax, dx                  ; AX = row index (i)
+    mov di , NUM_BRICKS_PER_LINE
+    mul di     ; AX = i * NUM_BRICKS_PER_LINE
+    add ax, cx                  ; AX = i * NUM_BRICKS_PER_LINE + j
+
+    ; Step 2: Compute the Address
+    mov si, offset BRICKS_STATUS ; SI = base address of BRICKS_STATUS
+    add si, ax                   ; SI = address of BRICKS_STATUS[i][j]
+
+    pop dx
+
+    ; Step 3: Compare the Value
+    cmp byte ptr [si], 0         ; Compare the brick status with 0
+    jne cont
+    mov bl , COLOR_BRICK
+    mov COLOR_BRICK , 0
+cont:
     call DRAW_BRICK         ; Draw one brick
+    mov COLOR_BRICK , bl
     inc COLOR_BRICK                ; Change the color for the next brick
     cmp COLOR_BRICK,0fh
     jne next
@@ -92,7 +113,7 @@ next:
 
     ; pop cx                         ; Restore the outer loop counter
     inc  dx 
-    cmp dx ,NUM_BRICKS_PER_COLUMN                        ; Move to the next row
+    cmp dx , NUM_BRICKS_PER_COLUMN                        ; Move to the next row
     je done                        ; If all rows are drawn, exit
 
     mov ax, BRICK_Y                ; Move to the next row vertically
