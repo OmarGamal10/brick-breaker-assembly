@@ -1,7 +1,7 @@
 .MODEL small
 .STACK 100h
 .data
-PUBLIC BRICK_X, BRICK_Y, INITIAL_X, INITIAL_Y, NUM_BRICKS_PER_LINE, NUM_BRICKS_PER_COLUMN, BRICK_WIDTH, BRICK_HEIGHT, COLOR_BRICK
+PUBLIC BRICK_X, BRICK_Y, INITIAL_X, INITIAL_Y, NUM_BRICKS_PER_LINE, NUM_BRICKS_PER_COLUMN, BRICK_WIDTH, BRICK_HEIGHT, COLOR_BRICK, Gap, BRICKS_STATUS   
 BRICK_X dw 0ah  
 BRICK_Y dw 0ah
 INITIAL_X EQu 0ah 
@@ -11,6 +11,9 @@ NUM_BRICKS_PER_COLUMN EQu 4
 BRICK_WIDTH dw 1ah  ; brick width 26 pixels
 BRICK_HEIGHT dw 0fh
 COLOR_BRICK db 01h ; color of the brick
+Gap EQu 4 
+BRICKS_STATUS db NUM_BRICKS_PER_COLUMN * NUM_BRICKS_PER_LINE dup(1)
+
 
     ;screen format    | 10 26 4 26 4 ......26 10|   each 26 is the brick and 4 is the gap between bricks and there is padding 10 pixels 
     ;                 | 10 4  4  4  ...........4|
@@ -80,7 +83,7 @@ next:
 
     mov ax, BRICK_X                ; Move to the next brick horizontally
     add ax, BRICK_WIDTH            ; Add the brick width
-    add ax, 4                      ; Add the horizontal gap
+    add ax, Gap                      ; Add the horizontal gap
     mov BRICK_X, ax                ; Update BRICK_X position
     loop inner_loop                ; Continue drawing bricks in the row
 
@@ -90,7 +93,7 @@ next:
 
     mov ax, BRICK_Y                ; Move to the next row vertically
     add ax, BRICK_HEIGHT           ; Add the brick height
-    add ax, 4                      ; Add the vertical gap
+    add ax, Gap                      ; Add the vertical gap
     mov BRICK_Y, ax                ; Update BRICK_Y position
 
     mov BRICK_X, INITIAL_X         ; Reset BRICK_X to the initial position

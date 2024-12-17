@@ -12,7 +12,7 @@ BALL_VELOCITY_Y DW 03h
 
 .CODE
 
-PUBLIC DRAW_BALL, CLEAR_BALL, MOVE_BALL
+PUBLIC DRAW_BALL, CLEAR_BALL, MOVE_BALL , CHECK_TIME , CHECK_COLLISION
 
 
 DRAW_BALL PROC NEAR
@@ -64,12 +64,8 @@ CLEAR_BALL ENDP
 
  
 
-
-
-MOVE_BALL PROC NEAR
-    push ax
-    push dx
-    check_time:
+CHECK_TIME PROC NEAR
+check_time:
         mov ah , 2ch    ; get the current time
         int 21h         ; ch = hour , cl = minutes , dh = seconds , dl = 1/100 seconds
 
@@ -77,28 +73,55 @@ MOVE_BALL PROC NEAR
         je check_time
     
     mov PREV_TIME_STEP , dl  ; Update previous time step
-    call CLEAR_BALL
+    ret
+CHECK_TIME ENDP
+
+
+
+MOVE_BALL PROC NEAR
 
     move_x:
-        mov ax , BALL_X         
+        mov ax , BALL_X
         add ax , BALL_VELOCITY_X
         mov BALL_X , ax         ;add velocity to x position
 
-        cmp ax , 0              
+    move_y:
+        mov ax , BALL_Y
+        add ax , BALL_VELOCITY_Y
+        mov BALL_Y , ax         ;add velocity to y position
+
+
+    
+    RET
+
+MOVE_BALL ENDP
+
+CHECK_COLLISION PROC NEAR
+
+    cmp BALL_X , 0
         jle collision_x_left    ;check if x position is less than 0
 
+        mov ax , BALL_X
         add ax , BALL_SIZE
         cmp ax , 320
         jge collision_x_right ;check if x position is greater than 320
 
-    jmp move_y          ;if not any of them jump to move_y
 
+        cmp BALL_Y , 0
+        jle collision_y_up      ;check if y position is less than 0
+
+        mov ax , BALL_Y
+        add ax , BALL_SIZE
+        cmp ax , 200
+        jge collision_y_down    ;check if y position is greater than 200
+
+    ret
 
     collision_x_left:
         mov BALL_X , 0          ;set x position to 0 
         neg BALL_VELOCITY_X     ;negate the velocity
-    
-    jmp move_y
+
+    ret
 
     collision_x_right:
         mov ax , 320
@@ -106,29 +129,12 @@ MOVE_BALL PROC NEAR
         mov BALL_X , ax         ;set x position to 320 - BALL_SIZE
         neg BALL_VELOCITY_X     ;negate the velocity
 
-
-    move_y:
-        mov ax , BALL_Y
-        add ax , BALL_VELOCITY_Y
-        mov BALL_Y , ax         ;add velocity to y position
-
-        cmp ax , 0
-        jle collision_y_up      ;check if y position is less than 0
-
-        add ax , BALL_SIZE
-        cmp ax , 200
-        jge collision_y_down    ;check if y position is greater than 200
-
-    pop dx
-    pop ax
     ret
 
     collision_y_up:
         mov BALL_Y , 0        ;set y position to 0
         neg BALL_VELOCITY_Y    ;negate the velocity
-    
-    pop dx
-    pop ax
+
     ret
 
     collision_y_down:
@@ -137,10 +143,9 @@ MOVE_BALL PROC NEAR
         mov BALL_Y , ax         ;set y position to 200 - BALL_SIZE
         neg BALL_VELOCITY_Y     ;negate the velocity
 
-    pop dx
-    pop ax
     ret
-    
-MOVE_BALL ENDP
+CHECK_COLLISION ENDP
+
+
 
 end 
