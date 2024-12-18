@@ -1,9 +1,9 @@
 CLEAR_SCREEN MACRO
-                  mov ax, 0600h
-                  mov bh, 07h
-                  mov cx, 0
-                  mov dx, 184fh
-                  int 10h
+               mov ax, 0600h
+               mov bh, 07h
+               mov cx, 0
+               mov dx, 184fh
+               int 10h
 ENDM
 
 
@@ -42,15 +42,10 @@ Main PROC FAR
 
      ;main loop
      game_loop:
-               call         WAIT_FOR_VSYNC
-               call         HANDLE_BAR_INPUT
-               call         CHECK_TIME
-               call         CLEAR_BALL
-               call         MOVE_BALL
-               CALL         CHECK_COLLISION
-               call         DRAW_BALL
-               jmp          game_loop
-               
+               call HANDLE_BAR_INPUT
+               call CHECK_TIME        ; Check timing first
+               call MOVE_BALL        ; Includes clear, update, collision, draw
+               jmp game_loop
 
      exit:     
                mov          ax, 4c00h
