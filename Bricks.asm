@@ -12,12 +12,12 @@ BRICK_WIDTH dw 1ah  ; brick width 26 pixels
 BRICK_HEIGHT dw 0fh ; brick height 10 pixels
 COLOR_BRICK db 01h ; color of the brick
 Gap EQu 4 
-BRICKS_STATUS db 10 dup(1) ; 40 bricks
+BRICKS_STATUS db 10 dup(2) ; 40 bricks
               db 10 dup(1)
-              db 10 dup(1)
+              db 10 dup(2)
               db 10 dup(1)
 
-CURRENT_NUM_BRICKS db 40 
+CURRENT_NUM_BRICKS db 0 
 
 
     ;screen format    | 10 26 4 26 4 ......26 10|   each 26 is the brick and 4 is the gap between bricks and there is padding 10 pixels 

@@ -246,7 +246,11 @@ CHECK_BRICKS_COLLISION PROC NEAR
     cmp byte ptr [si], 0            ; Brick already destroyed
     je short_no_brick_collision     ; No collision
     dec byte ptr [si]               ; Destroy brick
+    cmp byte ptr [si], 0
+     jne continue_
+    inc CURRENT_NUM_BRICKS
 
+    continue_:
     ; Check collision type
     mov ax, BALL_VELOCITY_Y
     cmp ax, 0
