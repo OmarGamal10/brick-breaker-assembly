@@ -1,7 +1,7 @@
 .MODEL small
 .STACK 100h
 .data
-PUBLIC BRICK_X, BRICK_Y, INITIAL_X, INITIAL_Y, NUM_BRICKS_PER_LINE, NUM_BRICKS_PER_COLUMN, BRICK_WIDTH, BRICK_HEIGHT, COLOR_BRICK, Gap, BRICKS_STATUS , CURRENT_NUM_BRICKS  
+PUBLIC BRICK_X, BRICK_Y, INITIAL_X, INITIAL_Y, NUM_BRICKS_PER_LINE, NUM_BRICKS_PER_COLUMN, BRICK_WIDTH, BRICK_HEIGHT, COLOR_BRICK, Gap, BRICKS_STATUS , CURRENT_SCORE  
 BRICK_X dw 0ah  
 BRICK_Y dw 0ah
 INITIAL_X EQu 0ah 
@@ -17,7 +17,7 @@ BRICKS_STATUS db 10 dup(2) ; 40 bricks
               db 10 dup(2)
               db 10 dup(1)
 
-CURRENT_NUM_BRICKS db 0 
+CURRENT_SCORE db 0 
 
 
     ;screen format    | 10 26 4 26 4 ......26 10|   each 26 is the brick and 4 is the gap between bricks and there is padding 10 pixels 
