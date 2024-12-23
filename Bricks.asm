@@ -75,8 +75,8 @@ outer_loop:
     mov cx, 0    ; Inner loop counter (bricks per row)
 inner_loop:
 
-     ; Step 1: Calculate the Linear Index
-     push dx
+    ; Step 1: Calculate the Linear Index
+    push dx
     mov ax, dx                  ; AX = row index (i)
     mov di , NUM_BRICKS_PER_LINE
     mul di     ; AX = i * NUM_BRICKS_PER_LINE
@@ -124,7 +124,11 @@ next:
     mov BRICK_X, INITIAL_X         ; Reset BRICK_X to the initial position
     jmp outer_loop                 ; Continue drawing the next row
 
+
+
 done:
+    mov BRICK_X, INITIAL_X         ; Reset BRICK_X to the initial position
+    mov BRICK_Y, INITIAL_Y         ; Reset BRICK_Y to the initial position
     pop dx
     pop cx
     pop ax

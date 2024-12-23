@@ -3,7 +3,7 @@
 .data
 PUBLIC BAR_X, BAR_Y, BAR_LENGTH, BAR_HEIGHT, BAR_SPEED, BAR_COLOR
 BAR_X dw 135
-BAR_Y dw 190
+BAR_Y dw 192
 BAR_LENGTH dw 60 ; to be decreased by levels
 BAR_HEIGHT dw 6
 BAR_SPEED dw 5 ;to be inccreased by levels
