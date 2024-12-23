@@ -3,14 +3,16 @@
 .data
 PUBLIC PREV_TIME_STEP, BALL_X, BALL_Y, BALL_SIZE, BALL_VELOCITY_X, BALL_VELOCITY_Y
 PREV_TIME_STEP DB 0h
-BALL_X DW 60h
-BALL_Y DW 60h
+BALL_X DW 0a0h
+BALL_Y DW 64h
+INITIAL_BALL_X EQu 0a0h
+INITIAL_BALL_Y EQu 64h
 BALL_SIZE DW 06h
 BALL_VELOCITY_X DW 06h
 BALL_VELOCITY_Y DW 03h
 
 EXTRN BAR_X:WORD, BAR_Y:WORD, BAR_LENGTH:WORD, BAR_HEIGHT:WORD
-EXTRN NUM_BRICKS_PER_LINE:WORD, NUM_BRICKS_PER_COLUMN:WORD, BRICK_WIDTH:WORD, BRICK_HEIGHT:WORD, COLOR_BRICK:BYTE, BRICKS_STATUS:BYTE, INITIAL_X:WORD, INITIAL_Y:WORD, Gap:WORD
+EXTRN NUM_BRICKS_PER_LINE:WORD, NUM_BRICKS_PER_COLUMN:WORD, BRICK_WIDTH:WORD, BRICK_HEIGHT:WORD, COLOR_BRICK:BYTE, BRICKS_STATUS:BYTE, INITIAL_X:WORD, INITIAL_Y:WORD, Gap:WORD ,CURRENT_NUM_BRICKS:BYTE
 
 .CODE
 
@@ -25,7 +27,7 @@ DRAW_BALL PROC NEAR
 
     draw_horizontal: 
         mov ah , 0ch        ;draw pixel command
-        mov al , 0eh          ;set the color of the ball
+        mov al , 0bh          ;set the color of the ball
         int 10h             ;interrupt to draw the pixel
         inc cx              ;increment x position
         mov ax , BALL_X
@@ -149,10 +151,8 @@ CHECK_COLLISION PROC NEAR
     ret
 
     collision_y_down:
-        mov ax , 200
-        sub ax , BALL_SIZE
-        mov BALL_Y , ax         ;set y position to 200 - BALL_SIZE
-        neg BALL_VELOCITY_Y     ;negate the velocity
+        mov BALL_X , INITIAL_BALL_X
+        mov BALL_Y , INITIAL_BALL_Y
     pop ax
     ret
 CHECK_COLLISION ENDP
@@ -192,6 +192,7 @@ no_collision:
     ret
 CHECK_BAR_COLLISION ENDP
 
+
 CHECK_BRICKS_COLLISION PROC NEAR
     push ax
     push bx
@@ -202,81 +203,84 @@ CHECK_BRICKS_COLLISION PROC NEAR
     ; Check ball position against brick zone
     mov ax, BALL_Y
     cmp ax, 10               ; INITIAL_Y
-    jl no_brick_collision
+    jge skip_no_brick_collision     ; Ball is above the brick zone
+    jmp short_no_brick_collision
+    
+    skip_no_brick_collision:
 
-    cmp ax, 80              ; Bottom of brick zone
-    jg no_brick_collision
+    cmp ax, 80                      ; Bottom of brick zone
+    jg short_no_brick_collision     ; Ball is below the brick zone
 
     ; Get current brick position
-    mov ax, BALL_Y          ; Current position y of the ball
-    sub ax, 10              ; Subtract INITIAL_Y to account for the first row
-    mov bx, 19             ; Brick height + gap ,,, 15+4
+    mov ax, BALL_Y                  ; Current position y of the ball
+    sub ax, 10                      ; Subtract INITIAL_Y to account for the first row
+    mov bx, 19                      ; Brick height + gap ,,, 15+4
     xor dx, dx
-    div bx                 ; now we want to know which row the ball is in, so divide by the height of the brick
-    cmp ax, 4              ; Check row bounds, we only want 0,1,2,3
-    jge no_brick_collision
-    mov cx, ax             ; Save row
+    div bx                          ; Divide by height of brick to determine row
+    cmp ax, NUM_BRICKS_PER_COLUMN                       ; Check row bounds, we only want 0,1,2,3
+    jge short_no_brick_collision    ; Out of bounds
+    mov cx, ax                      ; Save row
 
-    ;now which brick in the row
+    ; Determine which brick in the row
     mov ax, BALL_X
-    sub ax, 10             ; Subtract INITIAL_X
-    mov bx, 30            ; Brick width + gap
+    sub ax, 10                      ; Subtract INITIAL_X
+    mov bx, 30                      ; Brick width + gap
     xor dx, dx
-    div bx                ; divide by the width of the brick
-    cmp ax, 10            ; Check column bounds, we want 0-9
-    jge no_brick_collision
+    div bx                          ; Divide by width of brick to determine column
+    cmp ax, NUM_BRICKS_PER_LINE                      ; Check column bounds, we want 0-9
+    jge short_no_brick_collision    ; Out of bounds
 
-    ; we have the row and column of the brick
-    ; row * NUM_BRICKS_PER_LINE + column ,,,, here NUM_BRICKS_PER_LINE = 10
+    ; We have the row and column of the brick
+    ; Row * NUM_BRICKS_PER_LINE + column ,,,, here NUM_BRICKS_PER_LINE = 10
     ; Get brick index
-    push ax               ; Save column
-    mov ax, cx           ; Row
-    mov bx, 10           ; NUM_BRICKS_PER_LINE
-    mul bx               ; Row * width
-    pop bx               ; Get column
-    add ax, bx           ; Final index
+    push ax                         ; Save column
+    mov ax, cx                      ; Row
+    mov bx, 010                      ; NUM_BRICKS_PER_LINE
+    mul bx                          ; Row * width
+    pop bx                          ; Get column
+    add ax, bx                      ; Final index
 
     ; Check and update brick
     mov si, offset BRICKS_STATUS
     add si, ax
-    cmp byte ptr [si], 0 ;brick already destroyed
-    je no_brick_collision
-    mov byte ptr [si], 0   ; Destroy brick,,, now we should draw again , msh 3arf azbotha
+    cmp byte ptr [si], 0            ; Brick already destroyed
+    je short_no_brick_collision     ; No collision
+    dec byte ptr [si]               ; Destroy brick
 
     ; Check collision type
     mov ax, BALL_VELOCITY_Y
     cmp ax, 0
-    jl vertical_hit       ; If moving up, handle as vertical hit
+    jl short_vertical_hit           ; If moving up, handle as vertical hit
 
     ; Check for side collision
     mov ax, BALL_X
-    add ax, BALL_SIZE
-    mov bx, cx           ; Get saved row
-    push ax              ; Save ball position
+    add ax, BALL_SIZE               ; Add ball size to current position
+    mov bx, cx                      ; Get saved row
+    push ax                         ; Save ball position
     mov ax, bx
-    mov bx, 30          ; Brick width + gap
-    mul bx              ; Row * brick width
-    add ax, 10          ; Add INITIAL_X
-    mov bx, ax          ; BX = brick left edge
-    pop ax              ; Restore ball position
+    mov bx, 30                      ; Brick width + gap
+    mul bx                          ; Row * brick width
+    add ax, INITIAL_X                      ; Add INITIAL_X
+    mov bx, ax                      ; BX = brick left edge
+    pop ax                          ; Restore ball position
     
-    cmp ax, bx          ; Compare with brick left edge
-    jl side_hit
-    add bx, 26          ; Add BRICK_WIDTH
-    cmp ax, bx          ; Compare with brick right edge
-    jg side_hit
+    cmp ax, bx                      ; Compare with brick left edge
+    jl short_side_hit               ; Ball is to the left of the brick
+    add bx, 26                      ; Add BRICK_WIDTH
+    cmp ax, bx                      ; Compare with brick right edge
+    jg short_side_hit               ; Ball is to the right of the brick
     
-vertical_hit:
-    neg BALL_VELOCITY_Y  ; Vertical bounce
-    jmp hit_done
+short_vertical_hit:
+    neg BALL_VELOCITY_Y             ; Vertical bounce
+    jmp short_hit_done              ; Skip to hit done
 
-side_hit:
-    neg BALL_VELOCITY_X  ; Horizontal bounce
+short_side_hit:
+    neg BALL_VELOCITY_X             ; Horizontal bounce
 
-hit_done:
-    call DRAW_BRICKS    ; Update display
-    
-no_brick_collision:
+short_hit_done:
+    call DRAW_BRICKS                ; Update display
+
+short_no_brick_collision:
     pop si
     pop dx
     pop cx
@@ -285,4 +289,103 @@ no_brick_collision:
     ret
 CHECK_BRICKS_COLLISION ENDP
 
-end 
+
+; CHECK_BRICKS_COLLISION PROC NEAR
+;     push ax
+;     push bx
+;     push cx
+;     push dx
+;     push si
+
+;     ; Check ball position against brick zone
+;     mov ax, BALL_Y
+;     cmp ax, INITIAL_Y               ; INITIAL_Y
+;     jl far ptr no_brick_collision
+
+;     cmp ax, 80              ; Bottom of brick zone
+;     jg far ptr no_brick_collision
+
+;     ; Get current brick position
+;   mov ax, BALL_Y          ; Current Y position of the ball
+;     sub ax, INITIAL_Y              ; Adjust for INITIAL_Y (top of brick zone)
+;     mov bx, 19              ; Brick height + gap (15 + 4)
+;     xor dx, dx              ; Clear DX for division
+;     div bx                  ; AX / BX gives the row
+;     cmp ax, NUM_BRICKS_PER_COLUMN               ; Only valid rows are 0, 1, 2, 3
+;     jge far ptr no_brick_collision  ; If row >= 4, no collision
+;     mov cx, ax              ; Save row index in CX
+
+;     ;now which brick in the row
+;     mov ax, BALL_X
+;     sub ax, INITIAL_X             ; Subtract INITIAL_X
+;     mov bx, 30            ; Brick width + gap
+;     xor dx, dx
+;     div bx                ; divide by the width of the brick
+;     cmp ax, NUM_BRICKS_PER_LINE            ; Check column bounds, we want 0-9
+;     jge far ptr no_brick_collision
+
+;     ; we have the row and column of the brick
+;     ; row * NUM_BRICKS_PER_LINE + column ,,,, here NUM_BRICKS_PER_LINE = 10
+;     ; Get brick index
+;     push ax               ; Save column
+;     mov ax, cx           ; Row
+;     mov bx, NUM_BRICKS_PER_LINE           ; NUM_BRICKS_PER_LINE
+;     mul bx               ; Row * width
+;     pop bx               ; Get column
+;     add ax, bx           ; Final index
+
+;     ; Check and update brick
+;     mov si, offset BRICKS_STATUS
+;     add si, ax
+;     cmp byte ptr [si], 0 ;brick already destroyed
+;     je far ptr no_brick_collision
+;     dec byte ptr [si]  ; Destroy brick,,, now we should draw again , msh 3arf azbotha
+;     cmp byte ptr [si], 0
+;     jne continue_:
+;     dec CURRENT_NUM_BRICKS
+;     continue_:
+
+;     ; Check collision type
+;     mov ax, BALL_VELOCITY_Y
+;     cmp ax, 0
+;     jl vertical_hit       ; If moving up, handle as vertical hit
+
+;     ; Check for side collision
+;     mov ax, BALL_X
+;     add ax, BALL_SIZE
+;     mov bx, cx           ; Get saved row
+;     push ax              ; Save ball position
+;     mov ax, bx
+;     mov bx, 30          ; Brick width + gap
+;     mul bx              ; Row * brick width
+;     add ax, INITIAL_X          ; Add INITIAL_X
+;     mov bx, ax          ; BX = brick left edge
+;     pop ax              ; Restore ball position
+    
+;     cmp ax, bx          ; Compare with brick left edge
+;     jl side_hit
+;     add bx, BRICK_WIDTH          ; Add BRICK_WIDTH
+;     cmp ax, bx          ; Compare with brick right edge
+;     jg side_hit
+    
+; vertical_hit:
+;     neg BALL_VELOCITY_Y  ; Vertical bounce
+;     jmp hit_done
+
+; side_hit:
+;     neg BALL_VELOCITY_X  ; Horizontal bounce
+
+; hit_done:
+;     call DRAW_BRICKS    ; Update display
+    
+; no_brick_collision:
+;     pop si
+;     pop dx
+;     pop cx
+;     pop bx
+;     pop ax
+;     ret
+; CHECK_BRICKS_COLLISION ENDP
+
+; end 
+end

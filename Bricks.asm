@@ -1,7 +1,7 @@
 .MODEL small
 .STACK 100h
 .data
-PUBLIC BRICK_X, BRICK_Y, INITIAL_X, INITIAL_Y, NUM_BRICKS_PER_LINE, NUM_BRICKS_PER_COLUMN, BRICK_WIDTH, BRICK_HEIGHT, COLOR_BRICK, Gap, BRICKS_STATUS   
+PUBLIC BRICK_X, BRICK_Y, INITIAL_X, INITIAL_Y, NUM_BRICKS_PER_LINE, NUM_BRICKS_PER_COLUMN, BRICK_WIDTH, BRICK_HEIGHT, COLOR_BRICK, Gap, BRICKS_STATUS , CURRENT_NUM_BRICKS  
 BRICK_X dw 0ah  
 BRICK_Y dw 0ah
 INITIAL_X EQu 0ah 
@@ -9,10 +9,15 @@ INITIAL_Y EQu 0ah
 NUM_BRICKS_PER_LINE EQu 10
 NUM_BRICKS_PER_COLUMN EQu 4
 BRICK_WIDTH dw 1ah  ; brick width 26 pixels
-BRICK_HEIGHT dw 0fh
+BRICK_HEIGHT dw 0fh ; brick height 10 pixels
 COLOR_BRICK db 01h ; color of the brick
 Gap EQu 4 
-BRICKS_STATUS db 40 dup(1) ; 40 bricks
+BRICKS_STATUS db 10 dup(1) ; 40 bricks
+              db 10 dup(1)
+              db 10 dup(1)
+              db 10 dup(1)
+
+CURRENT_NUM_BRICKS db 40 
 
 
     ;screen format    | 10 26 4 26 4 ......26 10|   each 26 is the brick and 4 is the gap between bricks and there is padding 10 pixels 
@@ -83,23 +88,42 @@ inner_loop:
     add ax, cx                  ; AX = i * NUM_BRICKS_PER_LINE + j
 
     ; Step 2: Compute the Address
-    mov si, offset BRICKS_STATUS ; SI = base address of BRICKS_STATUS
+   mov si, offset BRICKS_STATUS ; SI = base address of BRICKS_STATUS
     add si, ax                   ; SI = address of BRICKS_STATUS[i][j]
 
     pop dx
 
-    ; Step 3: Compare the Value
-    cmp byte ptr [si], 0         ; Compare the brick status with 0
-    jne cont
-    mov bl , COLOR_BRICK
-    mov COLOR_BRICK , 0
+    ; Check brick status and set color
+    mov bl, [si]                 ; Get brick status
+    cmp bl ,4                       ; Check if status is 4
+    jne check_status_3
+    mov COLOR_BRICK, 04h         ; Red color
+    jmp cont
+check_status_3:
+    cmp bl, 3                    ; Check if status is 3
+    jne check_status_2
+    mov COLOR_BRICK, 0eh         ; yellow color
+    jmp cont
+
+check_status_2:
+    cmp bl, 2                    ; Check if status is 2
+    jne check_status_1  
+    mov COLOR_BRICK, 02h         ; Green color
+    jmp cont
+
+check_status_1:
+    cmp bl, 1                    ; Check if status is 1
+    jne status_zero
+    mov COLOR_BRICK, 01h         ; Blue color
+    jmp cont
+
+status_zero:
+    mov COLOR_BRICK, 00h         ; Black color
+
 cont:
-    call DRAW_BRICK         ; Draw one brick
-    mov COLOR_BRICK , bl
-    inc COLOR_BRICK                ; Change the color for the next brick
-    cmp COLOR_BRICK,0fh
-    jne next
-    mov COLOR_BRICK,01h
+    push bx
+    call DRAW_BRICK             ; Draw one brick
+    pop bx
 
 next:
 
