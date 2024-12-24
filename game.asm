@@ -22,7 +22,7 @@ ENDM
 
 .code
      ;bar procedures
-               EXTRN        DRAW_BAR:NEAR, CLEAR_BAR:NEAR, WAIT_FOR_VSYNC:NEAR, HANDLE_BAR_INPUT:FAR
+               EXTRN        DRAW_BAR1:NEAR, CLEAR_BAR1:NEAR, DRAW_BAR2:NEAR , CLEAR_BAR2:NEAR ,WAIT_FOR_VSYNC:NEAR, HANDLE_BAR_INPUT:FAR
 
      ;ball procedures
                EXTRN        DRAW_BALL:NEAR, CLEAR_BALL:NEAR, MOVE_BALL:NEAR , CHECK_TIME:NEAR , CHECK_COLLISION:NEAR
@@ -39,7 +39,8 @@ Game PROC FAR
 
      ;draw initial screen
                call         DRAW_BRICKS
-               call         DRAW_BAR
+               call         DRAW_BAR1
+               call         DRAW_BAR2
                call         DRAW_BALL
 
      ;main loop

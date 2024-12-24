@@ -7,7 +7,7 @@
       "command": "C:\\Program Files (x86)\\DOSBox-0.74-3\\DOSBox.exe", // Path to DOSBox executable
       "args": [
         "-c",
-        "mount C C:\\8086",
+        "mount C E:\\Uni\\Year2\\FirstTerm\\MicroProcessors\\Assembly\\Assemblyx69",
         "-c",
         "C:",
         "-c",
@@ -17,7 +17,7 @@
         "-c",
         "MainMenu.exe",
         "-c",
-        "exit"
+        //"exit"
       ],
       "group": {
         "kind": "build",
