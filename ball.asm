@@ -117,8 +117,6 @@ CHECK_COLLISION PROC NEAR
     jge collision_x_right ;check if x position is greater than 320
 
 
-    ;cmp BALL_Y , 0
-    ;jle collision_y_up      ;check if y position is less than 0
 
     mov ax , BALL_Y
     add ax , BALL_SIZE
@@ -133,6 +131,8 @@ CHECK_COLLISION PROC NEAR
     ; call CHECK_BRICKS_COLLISION
     pop ax
     ret
+    ;cmp BALL_Y , 0
+    ;jle collision_y_up      ;check if y position is less than 0
 
     collision_x_left:
         mov BALL_X , 0          ;set x position to 0 
@@ -152,6 +152,8 @@ CHECK_COLLISION PROC NEAR
     dec LIVES_COUNT
     cmp LIVES_COUNT, 0
     jne continue_game
+
+    ; ci
     
     ; Stop ball
     mov BALL_VELOCITY_X, 0

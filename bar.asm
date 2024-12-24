@@ -4,7 +4,7 @@
 PUBLIC BAR1_X, BAR2_X , BAR1_Y,BAR2_Y, BAR_LENGTH, BAR_HEIGHT, BAR_SPEED, BAR1_COLOR , BAR2_COLOR
 BAR1_X dw 80
 BAR1_Y dw 192
-BAR2_Y dw 140
+BAR2_Y dw 192
 BAR2_X dw 135
 
 BAR_LENGTH dw 60 ; to be decreased by levels
@@ -115,7 +115,7 @@ DRAW_OR_CLEAR_BAR2 ENDP
 
 DRAW_BAR2 PROC NEAR
   push ax
-  mov al, 0fh
+  mov al, 0eh
   call DRAW_OR_CLEAR_BAR2
   pop ax
   ret
@@ -186,7 +186,10 @@ CLEAR_BAR2 ENDP
     ;check if the bar is at the left edge of the screen
     mov ax, BAR1_X
     cmp ax, 0
-    jle handle_input_end;if the bar is at the left edge, continue the loop
+    jg skip2_handle_input;if the bar is at the left edge, continue the loop
+    jmp handle_input_end
+
+    skip2_handle_input:
     call WAIT_FOR_VSYNC
     ;clear the bar
     call CLEAR_BAR1
@@ -196,6 +199,7 @@ CLEAR_BAR2 ENDP
     mov BAR1_X, ax
     ;draw the bar
     call DRAW_BAR1
+    call DRAW_BAR2
     jmp check_input
 
     move_right_bar1:
@@ -213,6 +217,7 @@ CLEAR_BAR2 ENDP
     mov BAR1_X, ax
     ;draw the bar
     call DRAW_BAR1
+    call DRAW_BAR2
     jmp check_input
 
 
@@ -232,6 +237,7 @@ CLEAR_BAR2 ENDP
     mov BAR2_X, ax
     ;draw the bar
     call DRAW_BAR2
+    call DRAW_BAR1
     jmp check_input
 
     move_right_bar2:
@@ -249,6 +255,7 @@ CLEAR_BAR2 ENDP
     mov BAR2_X, ax
     ;draw the bar
     call DRAW_BAR2
+    call DRAW_BAR1
     jmp check_input
 
   handle_input_end:
