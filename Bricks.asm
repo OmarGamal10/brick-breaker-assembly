@@ -25,8 +25,36 @@ CURRENT_SCORE db 9
 .code
 
 
-PUBLIC DRAW_BRICK, DRAW_BRICKS
+PUBLIC DRAW_BRICK, DRAW_BRICKS, RESET_BRICKS_STATUS
 
+RESET_BRICKS_STATUS proc far
+    push ax
+    push cx
+    push dx
+
+    mov cx, 0
+    mov dx, 0
+    mov ax, 0
+    mov si, offset BRICKS_STATUS
+    mov di, 0
+    mov cx, NUM_BRICKS_PER_LINE
+    mov dx, NUM_BRICKS_PER_COLUMN
+    mov al, 2
+    mov bl, 0
+    mov bh, 0
+    mov cl, 0
+    mov ch, 0
+    mov dl, 0
+    mov dh, 0
+    mov es, si
+    cld
+    rep stosb
+
+    pop dx
+    pop cx
+    pop ax
+    ret
+RESET_BRICKS_STATUS endp
 
 
 DRAW_BRICK Proc near
