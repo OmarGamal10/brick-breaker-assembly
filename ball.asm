@@ -20,10 +20,10 @@ EXTRN NUM_BRICKS_PER_LINE:WORD, NUM_BRICKS_PER_COLUMN:WORD, BRICK_WIDTH:WORD, BR
 .CODE
 
 PUBLIC DRAW_BALL, CLEAR_BALL, MOVE_BALL , CHECK_TIME , CHECK_COLLISION
-EXTRN WAIT_FOR_VSYNC:NEAR, DRAW_BRICKS:NEAR , CLEAR_SCREEN_PROC:NEAR , main:FAR, DRAW_BAR:NEAR,  RESET_BRICKS_STATUS:FAR
+EXTRN WAIT_FOR_VSYNC:FAR, DRAW_BRICKS:FAR , CLEAR_SCREEN_PROC:FAR , main:FAR, DRAW_BAR:FAR,  RESET_BRICKS_STATUS:FAR , CLEAR_BAR1:FAR, CLEAR_BAR2:FAR , DRAW_BAR1:FAR, DRAW_BAR2:FAR
 
 
-DRAW_BALL PROC NEAR
+DRAW_BALL PROC FAR
     
     mov cx , BALL_X  ;set the initial x position of the ball
     mov dx , BALL_Y  ;set the initial y position of the ball
@@ -47,7 +47,7 @@ DRAW_BALL PROC NEAR
     RET
 DRAW_BALL ENDP
 
-CLEAR_BALL PROC NEAR
+CLEAR_BALL PROC FAR
     mov cx , BALL_X  ;set the initial x position of the ball
     mov dx , BALL_Y  ;set the initial y position of the ball
 
@@ -72,13 +72,13 @@ CLEAR_BALL ENDP
 
  
 
-CHECK_TIME PROC NEAR
-check_time:
+CHECK_TIME PROC FAR
+check_time_:
         mov ah , 2ch    ; get the current time
         int 21h         ; ch = hour , cl = minutes , dh = seconds , dl = 1/100 seconds
 
         cmp dl , PREV_TIME_STEP    ; Compare current time step with previous time step
-        je check_time
+        je check_time_
     
     mov PREV_TIME_STEP , dl  ; Update previous time step
     ret
@@ -86,9 +86,9 @@ CHECK_TIME ENDP
 
 
 
-MOVE_BALL PROC NEAR
-    call WAIT_FOR_VSYNC    ; Sync with screen refresh
-    call CLEAR_BALL        ; Clear old position
+MOVE_BALL PROC FAR
+    call far ptr WAIT_FOR_VSYNC    ; Sync with screen refresh
+    call far ptr CLEAR_BALL        ; Clear old position
     
     ; Update position
     mov ax, BALL_X
@@ -99,13 +99,13 @@ MOVE_BALL PROC NEAR
     add ax, BALL_VELOCITY_Y
     mov BALL_Y, ax
     
-    call CHECK_COLLISION   ; Check for collision
-    call DRAW_BALL         ; Draw at new position
+    call far ptr CHECK_COLLISION   ; Check for collision
+    call far ptr DRAW_BALL         ; Draw at new position
     ret
 MOVE_BALL ENDP
 
 
-CHECK_COLLISION PROC NEAR
+CHECK_COLLISION PROC FAR
     push ax
     ; Check for collision with screen edges
     cmp BALL_X , 0
@@ -124,15 +124,17 @@ CHECK_COLLISION PROC NEAR
     jge collision_y_down    ;check if y position is greater than 200
 
     
-    call CHECK_BAR1_COLLISION
-    call CHECK_BAR2_COLLISION
-    call CHECK_BRICKS_COLLISION
+    cmp BALL_Y , 0
+    jle collision_y_up      ;check if y position is less than 0
 
-    ; call CHECK_BRICKS_COLLISION
+    
+    call far ptr CHECK_BAR1_COLLISION
+    call far ptr CHECK_BAR2_COLLISION
+    call far ptr CHECK_BRICKS_COLLISION
+
     pop ax
     ret
-    ;cmp BALL_Y , 0
-    ;jle collision_y_up      ;check if y position is less than 0
+
 
     collision_x_left:
         mov BALL_X , 0          ;set x position to 0 
@@ -152,12 +154,22 @@ CHECK_COLLISION PROC NEAR
     dec LIVES_COUNT
     cmp LIVES_COUNT, 0
     jne continue_game
+    jmp pause_game
+    pop ax
+    ret
 
-    ; ci
+    collision_y_up:
+        mov BALL_Y , 0          ;set y position to 0
+        neg BALL_VELOCITY_Y     ;negate the velocity
+
+    pop ax
+    ret
+
     
     ; Stop ball
-    mov BALL_VELOCITY_X, 0
-    mov BALL_VELOCITY_Y, 0
+    pause_game:
+    ; mov BALL_VELOCITY_X, 0
+    ; mov BALL_VELOCITY_Y, 0
     
     ; Position cursor
     mov ah, 02h
@@ -177,11 +189,11 @@ wait_key:
     int 16h
     jz wait_key         ; If no key, keep waiting
     
-    mov ah, 00h         ; Get the key
-    int 16h             ; Clear key from buffer
+    ; mov ah, 00h         ; Get the key
+    ; int 16h             ; Clear key from buffer
     
     ; Now do reset sequence
-    call CLEAR_SCREEN_PROC
+    call far ptr CLEAR_SCREEN_PROC
     mov LIVES_COUNT, 3
     mov CURRENT_SCORE, 0
     mov BALL_X, INITIAL_BALL_X
@@ -189,8 +201,8 @@ wait_key:
     mov BALL_VELOCITY_X, INITIAL_BALL_VELOCITY_X
     mov BALL_VELOCITY_Y, INITIAL_BALL_VELOCITY_Y
 
-    call RESET_BRICKS_STATUS
-    call DRAW_BRICKS
+    call far ptr RESET_BRICKS_STATUS
+    call far ptr DRAW_BRICKS
     jmp far ptr main
 
 continue_game:
@@ -200,7 +212,7 @@ continue_game:
     ret
 CHECK_COLLISION ENDP
 
-CHECK_BAR1_COLLISION PROC NEAR
+CHECK_BAR1_COLLISION PROC FAR
     push ax 
     push bx
     ; Check if ball's bottom touches bar's top
@@ -228,7 +240,7 @@ CHECK_BAR1_COLLISION PROC NEAR
     mov ax, BAR1_Y
     sub ax, BALL_SIZE
     mov BALL_Y, ax
-    call DRAW_BALL
+    call far ptr DRAW_BALL
 no_collision1:
     pop bx
     pop ax 
@@ -237,7 +249,7 @@ CHECK_BAR1_COLLISION ENDP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-CHECK_BAR2_COLLISION PROC NEAR
+CHECK_BAR2_COLLISION PROC FAR
     push ax 
     push bx
     
@@ -286,7 +298,7 @@ no_collision2:
 CHECK_BAR2_COLLISION ENDP
 
 
-CHECK_BRICKS_COLLISION PROC NEAR
+CHECK_BRICKS_COLLISION PROC FAR
     push ax
     push bx
     push cx
@@ -313,7 +325,10 @@ CHECK_BRICKS_COLLISION PROC NEAR
     xor dx, dx
     div bx                          ; Divide by height of brick to determine row
     cmp ax, NUM_BRICKS_PER_COLUMN                       ; Check row bounds, we only want 0,1,2,3
-    jge short_no_brick_collision    ; Out of bounds
+    jl skip_no_brick_collision3
+    jmp short_no_brick_collision    ; Out of bounds
+
+    skip_no_brick_collision3:
     mov cx, ax                      ; Save row
 
     ; Determine which brick in the row
@@ -323,7 +338,10 @@ CHECK_BRICKS_COLLISION PROC NEAR
     xor dx, dx
     div bx                          ; Divide by width of brick to determine column
     cmp ax, NUM_BRICKS_PER_LINE                      ; Check column bounds, we want 0-9
-    jge short_no_brick_collision    ; Out of bounds
+    jl skip_short_no_brick_collision4
+    jmp short_no_brick_collision    ; Out of bounds
+
+    skip_short_no_brick_collision4:
 
     ; We have the row and column of the brick
     ; Row * NUM_BRICKS_PER_LINE + column ,,,, here NUM_BRICKS_PER_LINE = 10
@@ -340,10 +358,23 @@ CHECK_BRICKS_COLLISION PROC NEAR
     add si, ax
     cmp byte ptr [si], 0            ; Brick already destroyed
     je short_no_brick_collision     ; No collision
+    cmp byte ptr [si],5
+    jne decrement_once
+    inc LIVES_COUNT              ; Destroy brick
+    sub byte ptr [si] , 4 
+    decrement_once:
     dec byte ptr [si]               ; Destroy brick
     cmp byte ptr [si], 0
      jne continue_
     inc CURRENT_SCORE
+    cmp CURRENT_SCORE, 10
+    jne continue_
+    call far ptr CLEAR_BAR1
+    call far ptr CLEAR_BAR2
+    sub BAR_LENGTH , 10
+    call far ptr DRAW_BAR1
+    call far ptr DRAW_BAR2
+
 
     continue_:
     ; Check collision type
@@ -377,7 +408,7 @@ short_side_hit:
     neg BALL_VELOCITY_X             ; Horizontal bounce
 
 short_hit_done:
-    call DRAW_BRICKS                ; Update display
+    call far ptr DRAW_BRICKS                ; Update display
 
 short_no_brick_collision:
     pop si
@@ -389,7 +420,7 @@ short_no_brick_collision:
 CHECK_BRICKS_COLLISION ENDP
 
 
-; CHECK_BRICKS_COLLISION PROC NEAR
+; CHECK_BRICKS_COLLISION PROC FAR
 ;     push ax
 ;     push bx
 ;     push cx
@@ -475,7 +506,7 @@ CHECK_BRICKS_COLLISION ENDP
 ;     neg BALL_VELOCITY_X  ; Horizontal bounce
 
 ; hit_done:
-;     call DRAW_BRICKS    ; Update display
+;     call far ptr DRAW_BRICKS    ; Update display
     
 ; no_brick_collision:
 ;     pop si

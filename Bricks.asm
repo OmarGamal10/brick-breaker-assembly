@@ -14,10 +14,12 @@ COLOR_BRICK db 01h ; color of the brick
 Gap EQu 4 
 BRICKS_STATUS db 10 dup(4) ; 40 bricks
               db 10 dup(3)
-              db 10 dup(2)
+              db 4 dup(2)
+              db 2 dup(5)
+              db 4 dup(2)
               db 10 dup(1)
 
-CURRENT_SCORE db 9 
+CURRENT_SCORE db 0 
 
     ;screen format    | 10 26 4 26 4 ......26 10|   each 26 is the brick and 4 is the gap between bricks and there is padding 10 pixels 
     ;                 | 10 4  4  4  ...........4|
@@ -32,20 +34,50 @@ RESET_BRICKS_STATUS proc far
     push cx
     push si
     
-    mov cx, 30         ; First 3 rows (10 bricks * 3)
+    mov cx, 10         ; First 3 rows (10 bricks * 3)
     mov si, offset BRICKS_STATUS
-    mov al, 2          ; Strong bricks
-reset_strong:
+    mov al, 4          ; Strong bricks
+reset_red:
     mov [si], al
     inc si
-    loop reset_strong
+    loop reset_red
     
     mov cx, 10         ; Last row
-    mov al, 1          ; Weak bricks
-reset_weak:
+    mov al, 3          ; Weak bricks
+reset_yellow:
     mov [si], al
     inc si
-    loop reset_weak
+    loop reset_yellow
+
+
+    mov cx, 4         ; Last row
+    mov al, 2          ; Weak bricks
+reset_green_left:
+    mov [si], al
+    inc si
+    loop reset_green_left
+
+
+        mov cx, 2         ; Last row
+    mov al, 5          ; Weak bricks
+reset_magenta:
+    mov [si], al
+    inc si
+    loop reset_magenta
+
+        mov cx, 4         ; Last row
+    mov al, 2          ; Weak bricks
+reset_green_right:
+    mov [si], al
+    inc si
+    loop reset_green_right
+
+            mov cx, 10         ; Last row
+    mov al, 1          ; Weak bricks
+reset_blue:
+    mov [si], al
+    inc si
+    loop reset_blue
     
     pop si
     pop cx
@@ -54,7 +86,7 @@ reset_weak:
 RESET_BRICKS_STATUS endp
 
 
-DRAW_BRICK Proc near
+DRAW_BRICK Proc FAR
     push ax
     push cx
     push dx
@@ -91,7 +123,7 @@ draw_horizontal:
 
 DRAW_BRICK endp
 
-DRAW_BRICKS proc near
+DRAW_BRICKS proc FAR
     push ax
     push cx
     push dx
@@ -104,7 +136,7 @@ outer_loop:
     mov cx, 0    ; Inner loop counter (bricks per row)
 inner_loop:
 
-    ; Step 1: Calculate the Linear Index
+    ; Step 1: Calculate the LiFAR Index
     push dx
     mov ax, dx                  ; AX = row index (i)
     mov di , NUM_BRICKS_PER_LINE
@@ -119,6 +151,11 @@ inner_loop:
 
     ; Check brick status and set color
     mov bl, [si]                 ; Get brick status
+    cmp bl , 5
+    jne check_status_4
+    mov COLOR_BRICK, 05h         ; Magenta color
+    jmp cont
+check_status_4:
     cmp bl ,4                       ; Check if status is 4
     jne check_status_3
     mov COLOR_BRICK, 04h         ; Red color
@@ -146,7 +183,7 @@ status_zero:
 
 cont:
     push bx
-    call DRAW_BRICK             ; Draw one brick
+    call far ptr DRAW_BRICK             ; Draw one brick
     pop bx
 
 next:
@@ -164,7 +201,7 @@ next:
     cmp dx , NUM_BRICKS_PER_COLUMN                        ; Move to the next row
     je done                        ; If all rows are drawn, exit
 
-    mov ax, BRICK_Y                ; Move to the next row vertically
+    mov ax, BRICK_Y                ; Move to the next row verticall far ptry
     add ax, BRICK_HEIGHT           ; Add the brick height
     add ax, Gap                      ; Add the vertical gap
     mov BRICK_Y, ax                ; Update BRICK_Y position
