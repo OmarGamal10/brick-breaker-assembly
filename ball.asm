@@ -10,6 +10,7 @@ INITIAL_BALL_Y EQu 64h
 BALL_SIZE DW 06h
 BALL_VELOCITY_X DW 06h
 BALL_VELOCITY_Y DW 03h
+GAME_OVER_MSG db 'Game Over - Press any key to continue$'
 
 EXTRN BAR_X:WORD, BAR_Y:WORD, BAR_LENGTH:WORD, BAR_HEIGHT:WORD , LIVES_COUNT:BYTE
 EXTRN NUM_BRICKS_PER_LINE:WORD, NUM_BRICKS_PER_COLUMN:WORD, BRICK_WIDTH:WORD, BRICK_HEIGHT:WORD, COLOR_BRICK:BYTE, BRICKS_STATUS:BYTE, INITIAL_X:WORD, INITIAL_Y:WORD, Gap:WORD ,CURRENT_SCORE:BYTE
@@ -114,8 +115,8 @@ CHECK_COLLISION PROC NEAR
     jge collision_x_right ;check if x position is greater than 320
 
 
-    cmp BALL_Y , 0
-    jle collision_y_up      ;check if y position is less than 0
+    ;cmp BALL_Y , 0
+    ;jle collision_y_up      ;check if y position is less than 0
 
     mov ax , BALL_Y
     add ax , BALL_SIZE
@@ -144,24 +145,48 @@ CHECK_COLLISION PROC NEAR
     pop ax
     ret
 
-    collision_y_up:
-        mov BALL_Y , 0        ;set y position to 0
-        neg BALL_VELOCITY_Y    ;negate the velocity
-    pop ax
-    ret
-
     collision_y_down:
-        mov BALL_X , INITIAL_BALL_X
-        mov BALL_Y , INITIAL_BALL_Y
-        dec LIVES_COUNT
-        cmp LIVES_COUNT ,0
-        jne continue_game
-        mov BALL_VELOCITY_X ,0
-        mov BALL_VELOCITY_Y ,0
-        call far ptr main
-        ; call CLEAR_SCREEN_PROC 
+    dec LIVES_COUNT
+    cmp LIVES_COUNT, 0
+    jne continue_game
+    
+    ; Stop ball
+    mov BALL_VELOCITY_X, 0
+    mov BALL_VELOCITY_Y, 0
+    
+    ; Position cursor
+    mov ah, 02h
+    mov bh, 0            
+    mov dh, 12          
+    mov dl, 15          
+    int 10h
+    
+    ; Show game over message
+    mov ah, 09h
+    mov dx, offset GAME_OVER_MSG
+    int 21h
+    
+wait_key:
+    ; Wait for keypress
+    mov ah, 01h          ; Check if key available
+    int 16h
+    jz wait_key         ; If no key, keep waiting
+    
+    mov ah, 00h         ; Get the key
+    int 16h             ; Clear key from buffer
+    
+    ; Now do reset sequence
+    call CLEAR_SCREEN_PROC
+    mov LIVES_COUNT, 3
+    mov CURRENT_SCORE, 0
+    mov BALL_X, INITIAL_BALL_X
+    mov BALL_Y, INITIAL_BALL_Y
+    call DRAW_BRICKS
+    jmp far ptr main
 
-        continue_game:
+continue_game:
+    mov BALL_X, INITIAL_BALL_X    ; Reset position for normal life loss
+    mov BALL_Y, INITIAL_BALL_Y
     pop ax
     ret
 CHECK_COLLISION ENDP
