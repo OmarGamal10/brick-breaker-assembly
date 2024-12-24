@@ -13,7 +13,7 @@ BRICK_HEIGHT dw 0fh ; brick height 10 pixels
 COLOR_BRICK db 01h ; color of the brick
 Gap EQu 4 
 BRICKS_STATUS db 10 dup(2) ; 40 bricks
-              db 10 dup(1)
+              db 10 dup(2)
               db 10 dup(2)
               db 10 dup(1)
 
