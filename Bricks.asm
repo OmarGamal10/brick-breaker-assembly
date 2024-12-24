@@ -30,27 +30,24 @@ PUBLIC DRAW_BRICK, DRAW_BRICKS, RESET_BRICKS_STATUS
 RESET_BRICKS_STATUS proc far
     push ax
     push cx
-    push dx
-
-    mov cx, 0
-    mov dx, 0
-    mov ax, 0
+    push si
+    
+    mov cx, 30         ; First 3 rows (10 bricks * 3)
     mov si, offset BRICKS_STATUS
-    mov di, 0
-    mov cx, NUM_BRICKS_PER_LINE
-    mov dx, NUM_BRICKS_PER_COLUMN
-    mov al, 2
-    mov bl, 0
-    mov bh, 0
-    mov cl, 0
-    mov ch, 0
-    mov dl, 0
-    mov dh, 0
-    mov es, si
-    cld
-    rep stosb
-
-    pop dx
+    mov al, 2          ; Strong bricks
+reset_strong:
+    mov [si], al
+    inc si
+    loop reset_strong
+    
+    mov cx, 10         ; Last row
+    mov al, 1          ; Weak bricks
+reset_weak:
+    mov [si], al
+    inc si
+    loop reset_weak
+    
+    pop si
     pop cx
     pop ax
     ret

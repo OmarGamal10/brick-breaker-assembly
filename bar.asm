@@ -89,6 +89,12 @@ CLEAR_BAR ENDP
     mov ah, 00h
     int 16h
     ; use scan codes to check which key was pressed
+
+    ; check space bar
+    cmp ah, 39h
+    je pause_game
+
+    
     ; left and right arrow keys have scan codes 4b and 4d
     cmp ah, 4bh
     je move_left
@@ -97,6 +103,22 @@ CLEAR_BAR ENDP
     je move_right
 
     jmp handle_input_end ;if any other key is pressed, continue the loop
+
+    pause_game:
+    mov ah, 02h
+    mov bh, 0
+    mov dh, 12
+    mov dl, 15
+    int 10h
+
+
+    wait_resume:
+    mov ah, 01h
+    int 16h
+    jz wait_resume
+
+    jmp handle_input_end
+
 
     move_left:
     ;check if the bar is at the left edge of the screen

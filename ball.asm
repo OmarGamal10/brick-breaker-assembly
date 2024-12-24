@@ -160,7 +160,7 @@ CHECK_COLLISION PROC NEAR
     mov ah, 02h
     mov bh, 0            
     mov dh, 12          
-    mov dl, 15          
+    mov dl, 2          
     int 10h
     
     ; Show game over message
