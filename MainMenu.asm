@@ -107,15 +107,18 @@ ENDM SET_CURSOR_MACRO
     EXTRN BRICK_X:WORD, BRICK_Y:WORD, INITIAL_X:WORD, INITIAL_Y:WORD, NUM_BRICKS_PER_LINE:WORD, NUM_BRICKS_PER_COLUMN:WORD, BRICK_WIDTH:WORD, BRICK_HEIGHT:WORD, COLOR_BRICK:BYTE , Gap:WORD, BRICKS_STATUS:BYTE , CURRENT_SCORE:WORD
 
     ; Main Menu Variables
-    TITLE_VARIABLE db "BRICK a BREAKER - MAIN MENU$"
+    TITLE_VARIABLE db "BRICK BREAKER - MAIN MENU$"
     OPTION1_VARIABLE db "1. Start Game$"
     OPTION2_VARIABLE db "2. Chat$"
     OPTION3_VARIABLE db "3. Exit$"
     SCORE_MESSAGE db "SCORE: $"
+    LIVES_MESSAGE db "LIVES: $"
 
     SELECTED_OPTION db 0
     NO_OF_OPTIONS db 2 ; Number of menu options - 1
     CLEAR db " $"
+    HEART db 3 ; Heart symbol is 3 IDK how but it works
+    LIVES_COUNT db 3
     temp db 0
     ; Chat Variables
     VALUE db ?     ;VALUE which will be sent or recieved by user
@@ -154,6 +157,15 @@ SET_CURSOR_PROC proc far ; Set cursot at position x in dl and y in dh
     int 10h
 ret
 SET_CURSOR_PROC endp
+
+PRINT_HEART_PROC proc far
+    mov al , HEART
+    mov ah,9
+    mov cx,1h
+    mov bl,04h
+    int 10h
+    ret
+PRINT_HEART_PROC endp
 
 DISPLAY_MENU_PROC proc far
 
@@ -332,6 +344,29 @@ start_game:
     mov dx, offset SCORE_MESSAGE
     call DISPLAY_TEXT_PROC
 
+    mov dl, 25          
+    mov dh, 0          
+    call SET_CURSOR_PROC
+
+    mov dx, offset LIVES_MESSAGE
+    call DISPLAY_TEXT_PROC
+
+    
+    mov dl, 32          
+    mov dh, 0          
+    call SET_CURSOR_PROC
+    call PRINT_HEART_PROC
+
+    mov dl, 34          
+    mov dh, 0          
+    call SET_CURSOR_PROC
+    call PRINT_HEART_PROC
+    
+    mov dl, 36          
+    mov dh, 0          
+    call SET_CURSOR_PROC
+    call PRINT_HEART_PROC
+
 game_loop:
     mov ah, 1
     int 16h
@@ -365,6 +400,18 @@ game_loop:
     mov bl,03h
     int 10h
 
+
+    ; TODO Print LIVES_COUNT when I get them ANAS IBRAHEM
+    ; mov al , LIVES_COUNT
+    ; add al , '0'
+    ; mov dl, 31            
+    ; mov dh, 0  
+    ; call SET_CURSOR_PROC
+
+    ; mov ah,9
+    ; mov cx,1h
+    ; mov bl,04h
+    ; int 10h
 
 
     mov ah,1 ; Check if a key is pressed
