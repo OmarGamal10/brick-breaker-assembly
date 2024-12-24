@@ -238,12 +238,25 @@ CHECK_BAR1_COLLISION ENDP
 CHECK_BAR2_COLLISION PROC NEAR
     push ax 
     push bx
-    ; Check if ball's bottom touches bar's top
+    
+    ; Only check if ball is moving down
+    mov ax, BALL_VELOCITY_Y
+    cmp ax, 0
+    jl no_collision2       ; Skip if moving up
+    
+    ; Check if ball's bottom edge is at bar's top
     mov ax, BALL_Y
-    add ax, BALL_SIZE      ; Get ball's bottom edge
-    cmp ax, BAR2_Y         ; Compare with bar's top
-    jl no_collision2       ; Ball is above bar
-
+    add ax, BALL_SIZE      ; Ball bottom edge
+    cmp ax, BAR2_Y         ; Compare with bar top
+    jl no_collision2       ; Ball above bar
+    
+    ; Check if ball's top edge is past bar's bottom
+    mov ax, BALL_Y
+    mov bx, BAR2_Y
+    add bx, BAR_HEIGHT
+    cmp ax, bx             ; Compare ball top with bar bottom
+    jg no_collision2       ; Ball below bar
+    
     ; Check horizontal overlap
     mov ax, BALL_X        ; Ball's left edge
     add ax, BALL_SIZE     ; Ball's right edge
@@ -254,19 +267,19 @@ CHECK_BAR2_COLLISION PROC NEAR
     mov bx, BAR2_X
     add bx, BAR_LENGTH
     cmp ax, bx           ; Compare with bar's right
-    jg no_collision2       ; Ball is right of bar
+    jg no_collision2      ; Ball is right of bar
 
     ; Collision detected - bounce ball
     neg BALL_VELOCITY_Y
-
-    ;ensure the ball doesn't penetrate the bar
+    
+    ; Position correction
     mov ax, BAR2_Y
     sub ax, BALL_SIZE
     mov BALL_Y, ax
-    call DRAW_BALL
+    
 no_collision2:
     pop bx
-    pop ax 
+    pop ax
     ret
 CHECK_BAR2_COLLISION ENDP
 
