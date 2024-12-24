@@ -209,7 +209,9 @@ CHECK_BRICKS_COLLISION PROC NEAR
     skip_no_brick_collision:
 
     cmp ax, 80                      ; Bottom of brick zone
-    jg short_no_brick_collision     ; Ball is below the brick zone
+    jle short skip_short_no_brick_collision
+    jmp short_no_brick_collision     ; Ball is below the brick zone
+    skip_short_no_brick_collision:
 
     ; Get current brick position
     mov ax, BALL_Y                  ; Current position y of the ball

@@ -6,11 +6,13 @@ CLEAR_SCREEN MACRO
                int 10h
 ENDM
 
-
+; NO NEED FOR THIS FILE RIGHT NOW ;;ANAS IBRAHEM
 .model small
 .stack 100h
 
 .data
+
+          PUBLIC Game
      ; ball data
           EXTRN BALL_X:WORD, BALL_Y:WORD, BALL_SIZE:WORD, BALL_VELOCITY_X:WORD, BALL_VELOCITY_Y:WORD
      ; bar data
@@ -28,9 +30,9 @@ ENDM
      ;brick procedures
                EXTRN        DRAW_BRICK:NEAR,  DRAW_BRICKS:NEAR
 
-Main PROC FAR
-               mov          ax, @data
-               mov          ds, ax
+Game PROC FAR
+               ; mov          ax, @data
+               ; mov          ds, ax
                CLEAR_SCREEN
                mov          ax,13h
                int          10h
@@ -50,5 +52,6 @@ Main PROC FAR
      exit:     
                mov          ax, 4c00h
                int          21h
-Main ENDP
-END Main
+               ret
+Game ENDP
+END Game

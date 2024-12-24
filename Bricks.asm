@@ -17,7 +17,7 @@ BRICKS_STATUS db 10 dup(2) ; 40 bricks
               db 10 dup(2)
               db 10 dup(1)
 
-CURRENT_SCORE db 0 
+CURRENT_SCORE db 9 
 
 
     ;screen format    | 10 26 4 26 4 ......26 10|   each 26 is the brick and 4 is the gap between bricks and there is padding 10 pixels 

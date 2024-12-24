@@ -2,6 +2,20 @@
 ; Description: A simple main menu for a brick breaker
 ; ; 3 5  / 3 8 /  3 11 Cursor Positions
 
+;; Updated By : Anas Ibrahem    24 / 12 / 2024
+CLEAR_SCREEN_GAME_MACRO MACRO ;; Not used in this file
+    mov ax, 0600h ; Clear Screen
+    mov bh, 07h
+    mov cx, 0
+    mov dx, 184fh
+    int 10h
+ENDM CLEAR_SCREEN_GAME_MACRO  
+
+CLEAR_SCREEN_MACRO MACRO
+    mov ah, 0
+    mov al, 3
+    int 10h
+ENDM CLEAR_SCREEN_MACRO 
 
 SAVE_CURSOR_SENDER_MACRO MACRO
 mov ah,3h
@@ -85,15 +99,24 @@ ENDM SET_CURSOR_MACRO
 ;-----------------------------------------------------------------------------------------------------
 .model small
 .data
+; ball data
+    EXTRN BALL_X:WORD, BALL_Y:WORD, BALL_SIZE:WORD, BALL_VELOCITY_X:WORD, BALL_VELOCITY_Y:WORD
+; bar data
+    EXTRN BAR_X:WORD, BAR_Y:WORD, BAR_LENGTH:WORD, BAR_HEIGHT:WORD, BAR_SPEED:WORD, BAR_COLOR:BYTE
+; brick data
+    EXTRN BRICK_X:WORD, BRICK_Y:WORD, INITIAL_X:WORD, INITIAL_Y:WORD, NUM_BRICKS_PER_LINE:WORD, NUM_BRICKS_PER_COLUMN:WORD, BRICK_WIDTH:WORD, BRICK_HEIGHT:WORD, COLOR_BRICK:BYTE , Gap:WORD, BRICKS_STATUS:BYTE , CURRENT_SCORE:WORD
+
     ; Main Menu Variables
-    TITLE_VARIABLE db "BRICK BREAKER - MAIN MENU$"
+    TITLE_VARIABLE db "BRICK a BREAKER - MAIN MENU$"
     OPTION1_VARIABLE db "1. Start Game$"
     OPTION2_VARIABLE db "2. Chat$"
     OPTION3_VARIABLE db "3. Exit$"
+    SCORE_MESSAGE db "SCORE: $"
+
     SELECTED_OPTION db 0
     NO_OF_OPTIONS db 2 ; Number of menu options - 1
     CLEAR db " $"
-
+    temp db 0
     ; Chat Variables
     VALUE db ?     ;VALUE which will be sent or recieved by user
     Y_SENDER db 0     ;y position of sending initial will be 0
@@ -102,6 +125,15 @@ ENDM SET_CURSOR_MACRO
     Y_RECEIVE db 0Dh   ;y position of recieving initial wil be D because of lower part of screen 
 .stack 100h
 .code
+;bar procedures
+        EXTRN        DRAW_BAR:NEAR, CLEAR_BAR:NEAR, WAIT_FOR_VSYNC:NEAR, HANDLE_BAR_INPUT:FAR
+
+;ball procedures
+        EXTRN        DRAW_BALL:NEAR, CLEAR_BALL:NEAR, MOVE_BALL:NEAR , CHECK_TIME:NEAR , CHECK_COLLISION:NEAR
+
+;brick procedures
+        EXTRN        DRAW_BRICK:NEAR,  DRAW_BRICKS:NEAR
+
 
 CLEAR_SCREEN_PROC proc far 
     mov ah, 0
@@ -272,13 +304,82 @@ reset_to_bottom:
 
 select_option:
     cmp SELECTED_OPTION, 0
-    ; je start_game
+    je start_game
     cmp SELECTED_OPTION, 1
-    je show_chat
+    jmp far ptr show_chat
     cmp SELECTED_OPTION, 2
     jmp far ptr exit_game
     jmp menu_loop
 
+start_game: 
+    ;draw initial screen
+    CLEAR_SCREEN_MACRO
+    
+ 
+    mov ax, 13h
+    int 10h
+    
+
+    call DRAW_BRICKS
+    call DRAW_BAR
+    call DRAW_BALL
+
+    ;; Set Cursor for Score
+    mov dl, 1            
+    mov dh, 0          
+    call SET_CURSOR_PROC
+    ;; Display Score Message 
+    mov dx, offset SCORE_MESSAGE
+    call DISPLAY_TEXT_PROC
+
+game_loop:
+    mov ah, 1
+    int 16h
+
+    ; Print CURRENT_SCORE
+    mov ax, CURRENT_SCORE
+    ;; Convert to ascii
+    aam
+    add al, '0'
+    add ah ,'0'
+
+    ; Print al
+    mov temp , ah
+    mov dl, 8            
+    mov dh, 0  
+    call SET_CURSOR_PROC
+
+    mov ah,9
+    mov cx,1h 
+    mov bl,03h
+    int 10h
+
+    ; Print ah
+    mov al , temp
+    mov dl, 7            
+    mov dh, 0  
+    call SET_CURSOR_PROC
+
+    mov ah,9
+    mov cx,1h
+    mov bl,03h
+    int 10h
+
+
+
+    mov ah,1 ; Check if a key is pressed
+    int 16h
+    cmp al, 27d ; ESC key
+    jnz continue_game
+    CLEAR_SCREEN_MACRO
+    jmp far ptr start_menu
+    continue_game:
+
+    
+    call HANDLE_BAR_INPUT
+    call CHECK_TIME        ; Check timing first
+    call MOVE_BALL         ; Includes clear, update, collision, draw
+    jmp game_loop
 
 show_chat:
     call CLEAR_SCREEN_PROC 
