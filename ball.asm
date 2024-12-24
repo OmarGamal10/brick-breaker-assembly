@@ -14,7 +14,7 @@ INITIAL_BALL_VELOCITY_X EQu 06h
 INITIAL_BALL_VELOCITY_Y EQu 03h
 GAME_OVER_MSG db 'Game Over - Press any key to continue$'
 
-EXTRN BAR_X:WORD, BAR_Y:WORD, BAR_LENGTH:WORD, BAR_HEIGHT:WORD , LIVES_COUNT:BYTE
+EXTRN BAR1_X:WORD,BAR2_X:WORD, BAR1_Y:WORD,BAR2_Y:WORD, BAR_LENGTH:WORD, BAR_HEIGHT:WORD , LIVES_COUNT:BYTE
 EXTRN NUM_BRICKS_PER_LINE:WORD, NUM_BRICKS_PER_COLUMN:WORD, BRICK_WIDTH:WORD, BRICK_HEIGHT:WORD, COLOR_BRICK:BYTE, BRICKS_STATUS:BYTE, INITIAL_X:WORD, INITIAL_Y:WORD, Gap:WORD ,CURRENT_SCORE:BYTE
 
 .CODE
@@ -126,7 +126,8 @@ CHECK_COLLISION PROC NEAR
     jge collision_y_down    ;check if y position is greater than 200
 
     
-    call CHECK_BAR_COLLISION
+    call CHECK_BAR1_COLLISION
+    call CHECK_BAR2_COLLISION
     call CHECK_BRICKS_COLLISION
 
     ; call CHECK_BRICKS_COLLISION
@@ -197,40 +198,77 @@ continue_game:
     ret
 CHECK_COLLISION ENDP
 
-CHECK_BAR_COLLISION PROC NEAR
+CHECK_BAR1_COLLISION PROC NEAR
     push ax 
     push bx
     ; Check if ball's bottom touches bar's top
     mov ax, BALL_Y
     add ax, BALL_SIZE      ; Get ball's bottom edge
-    cmp ax, BAR_Y         ; Compare with bar's top
-    jl no_collision       ; Ball is above bar
+    cmp ax, BAR1_Y         ; Compare with bar's top
+    jl no_collision1       ; Ball is above bar
 
     ; Check horizontal overlap
     mov ax, BALL_X        ; Ball's left edge
     add ax, BALL_SIZE     ; Ball's right edge
-    cmp ax, BAR_X        ; Compare with bar's left
-    jl no_collision       ; Ball is left of bar
+    cmp ax, BAR1_X        ; Compare with bar's left
+    jl no_collision1       ; Ball is left of bar
 
     mov ax, BALL_X
-    mov bx, BAR_X
+    mov bx, BAR1_X
     add bx, BAR_LENGTH
     cmp ax, bx           ; Compare with bar's right
-    jg no_collision       ; Ball is right of bar
+    jg no_collision1       ; Ball is right of bar
 
     ; Collision detected - bounce ball
     neg BALL_VELOCITY_Y
 
     ;ensure the ball doesn't penetrate the bar
-    mov ax, BAR_Y
+    mov ax, BAR1_Y
     sub ax, BALL_SIZE
     mov BALL_Y, ax
     call DRAW_BALL
-no_collision:
+no_collision1:
     pop bx
     pop ax 
     ret
-CHECK_BAR_COLLISION ENDP
+CHECK_BAR1_COLLISION ENDP
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+CHECK_BAR2_COLLISION PROC NEAR
+    push ax 
+    push bx
+    ; Check if ball's bottom touches bar's top
+    mov ax, BALL_Y
+    add ax, BALL_SIZE      ; Get ball's bottom edge
+    cmp ax, BAR2_Y         ; Compare with bar's top
+    jl no_collision2       ; Ball is above bar
+
+    ; Check horizontal overlap
+    mov ax, BALL_X        ; Ball's left edge
+    add ax, BALL_SIZE     ; Ball's right edge
+    cmp ax, BAR2_X        ; Compare with bar's left
+    jl no_collision2       ; Ball is left of bar
+
+    mov ax, BALL_X
+    mov bx, BAR2_X
+    add bx, BAR_LENGTH
+    cmp ax, bx           ; Compare with bar's right
+    jg no_collision2       ; Ball is right of bar
+
+    ; Collision detected - bounce ball
+    neg BALL_VELOCITY_Y
+
+    ;ensure the ball doesn't penetrate the bar
+    mov ax, BAR2_Y
+    sub ax, BALL_SIZE
+    mov BALL_Y, ax
+    call DRAW_BALL
+no_collision2:
+    pop bx
+    pop ax 
+    ret
+CHECK_BAR2_COLLISION ENDP
 
 
 CHECK_BRICKS_COLLISION PROC NEAR

@@ -1,9 +1,10 @@
 .model small
 .stack 100h
 .data
-PUBLIC BAR1_X, BAR2_X , BAR_Y, BAR_LENGTH, BAR_HEIGHT, BAR_SPEED, BAR1_COLOR
+PUBLIC BAR1_X, BAR2_X , BAR1_Y,BAR2_Y, BAR_LENGTH, BAR_HEIGHT, BAR_SPEED, BAR1_COLOR , BAR2_COLOR
 BAR1_X dw 80
-BAR_Y dw 192
+BAR1_Y dw 192
+BAR2_Y dw 140
 BAR2_X dw 135
 
 BAR_LENGTH dw 60 ; to be decreased by levels
@@ -38,8 +39,8 @@ DRAW_OR_CLEAR_BAR1 PROC NEAR
   push dx
   mov BAR1_COLOR, al
   mov cx, BAR1_X ;col
-  mov dx, BAR_Y ;row
-  draw_bar_horizontal:
+  mov dx, BAR1_Y ;row
+  draw_bar1_horizontal:
     mov ah, 0ch
     mov al, BAR1_COLOR
     int 10h
@@ -47,13 +48,13 @@ DRAW_OR_CLEAR_BAR1 PROC NEAR
     mov ax, BAR1_X 
     add ax, BAR_LENGTH
     cmp cx, ax  ;next col
-    jb draw_bar_horizontal
+    jb draw_bar1_horizontal
   inc dx
-  mov ax, BAR_Y
+  mov ax, BAR1_Y
   add ax, BAR_HEIGHT
   mov cx, BAR1_X  ;return to starting column
   cmp dx, ax      
-  jb draw_bar_horizontal ; move to next row
+  jb draw_bar1_horizontal ; move to next row
   pop dx
   pop cx
   pop ax
@@ -88,8 +89,8 @@ DRAW_OR_CLEAR_BAR2 PROC NEAR
   push dx
   mov BAR2_COLOR, al
   mov cx, BAR2_X ;col
-  mov dx, BAR_Y ;row
-  draw_bar_horizontal:
+  mov dx, BAR2_Y ;row
+  draw_bar2_horizontal:
     mov ah, 0ch
     mov al, BAR2_COLOR
     int 10h
@@ -97,13 +98,13 @@ DRAW_OR_CLEAR_BAR2 PROC NEAR
     mov ax, BAR2_X 
     add ax, BAR_LENGTH
     cmp cx, ax  ;next col
-    jb draw_bar_horizontal
+    jb draw_bar2_horizontal
   inc dx
-  mov ax, BAR_Y
+  mov ax, BAR2_Y
   add ax, BAR_HEIGHT
   mov cx, BAR2_X  ;return to starting column
   cmp dx, ax      
-  jb draw_bar_horizontal ; move to next row
+  jb draw_bar2_horizontal ; move to next row
   pop dx
   pop cx
   pop ax
@@ -136,8 +137,9 @@ CLEAR_BAR2 ENDP
     check_input:
     mov ah, 01h
     int 16h
-    jz handle_input_end ;if no key pressed, continue the loop
-
+    jnz skip_handle_input
+    jmp  handle_input_end;if no key pressed, continue the loop
+    skip_handle_input:
     ; check which key was pressed
     mov ah, 00h
     int 16h
