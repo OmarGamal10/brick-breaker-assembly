@@ -13,6 +13,7 @@ BALL_VELOCITY_Y DW 03h
 INITIAL_BALL_VELOCITY_X EQu 06h
 INITIAL_BALL_VELOCITY_Y EQu 03h
 GAME_OVER_MSG db 'Game Over - Press any key to continue$'
+GAME_WIN_MSG db 'Congratulations! - Press any key to continue$'
 
 EXTRN BAR1_X:WORD,BAR2_X:WORD, BAR1_Y:WORD,BAR2_Y:WORD, BAR_LENGTH:WORD, BAR_HEIGHT:WORD , LIVES_COUNT:BYTE , READY1:BYTE , READY2:BYTE
 EXTRN NUM_BRICKS_PER_LINE:WORD, NUM_BRICKS_PER_COLUMN:WORD, BRICK_WIDTH:WORD, BRICK_HEIGHT:WORD, COLOR_BRICK:BYTE, BRICKS_STATUS:BYTE, INITIAL_X:WORD, INITIAL_Y:WORD, Gap:WORD ,CURRENT_SCORE:BYTE
@@ -358,7 +359,9 @@ CHECK_BRICKS_COLLISION PROC FAR
     mov si, offset BRICKS_STATUS
     add si, ax
     cmp byte ptr [si], 0            ; Brick already destroyed
-    je short_no_brick_collision     ; No collision
+    jne skip_no_brick_collision66
+    jmp short_no_brick_collision     ; No collision
+    skip_no_brick_collision66:
     cmp byte ptr [si],5
     jne decrement_once
     inc LIVES_COUNT              ; Destroy brick
@@ -369,12 +372,57 @@ CHECK_BRICKS_COLLISION PROC FAR
      jne continue_
     inc CURRENT_SCORE
     cmp CURRENT_SCORE, 10
-    jne continue_
+    jne check_win
     call far ptr CLEAR_BAR1
     call far ptr CLEAR_BAR2
     sub BAR_LENGTH , 10
     call far ptr DRAW_BAR1
     call far ptr DRAW_BAR2
+
+    check_win:
+        cmp CURRENT_SCORE , 40
+        jne continue_
+        jmp pause_game_2
+
+
+    pause_game_2:
+    ; mov BALL_VELOCITY_X, 0
+    ; mov BALL_VELOCITY_Y, 0
+    ; Position cursor
+    mov ah, 02h
+    mov bh, 0            
+    mov dh, 12          
+    mov dl, 2          
+    int 10h
+    
+    ; Show game over message
+    mov ah, 09h
+    mov dx, offset GAME_WIN_MSG
+    int 21h
+    
+wait_key_2:
+    ; Wait for keypress
+    mov ah, 01h          ; Check if key available
+    int 16h
+    jz wait_key_2         ; If no key, keep waiting
+    
+    ; mov ah, 00h         ; Get the key
+    ; int 16h             ; Clear key from buffer
+    
+    ; Now do reset sequence
+    call far ptr CLEAR_SCREEN_PROC
+    mov LIVES_COUNT, 3
+    mov CURRENT_SCORE, 0
+    mov BALL_X, INITIAL_BALL_X
+    mov BALL_Y, INITIAL_BALL_Y
+    mov READY1 , 0
+    mov READY2 , 0
+    mov BALL_VELOCITY_X, INITIAL_BALL_VELOCITY_X
+    mov BALL_VELOCITY_Y, INITIAL_BALL_VELOCITY_Y
+
+    call far ptr RESET_BRICKS_STATUS
+    call far ptr DRAW_BRICKS
+    jmp far ptr main
 
 
     continue_:

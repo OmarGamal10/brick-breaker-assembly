@@ -7,11 +7,11 @@
       "command": "C:\\Program Files (x86)\\DOSBox-0.74-3\\DOSBox.exe", // Path to DOSBox executable
       "args": [
         "-c",
-        "mount C C:\\8086",
+        "mount C E:\\Uni\\Year2\\FirstTerm\\MicroProcessors\\Assembly\\Assemblyx69",
         "-c",
         "C:",
         "-c",
-        "TASM.EXE MainMenu.asm",
+        "TASM.EXE ball.asm",
         // "-c",
         // "LINK.EXE MainMenu.obj Bricks.obj bar.obj ball.obj;",
         // "-c",

@@ -10,7 +10,7 @@ fullresolution=640x400
 windowresolution=640x400
 output=openglpp
 [autoexec]
-mount C C:\\8086
+mount C E:\\Uni\\Year2\\FirstTerm\\MicroProcessors\\Assembly\\Assemblyx69
 C:
 tasm /m2 *.asm
 link MainMenu.obj Bricks.obj bar.obj ball.obj;
