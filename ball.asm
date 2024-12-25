@@ -362,6 +362,17 @@ CHECK_BRICKS_COLLISION PROC FAR
     jne skip_no_brick_collision66
     jmp short_no_brick_collision     ; No collision
     skip_no_brick_collision66:
+    cmp byte ptr [si], 6
+    jne check_magenta
+    sub byte ptr [si] , 5
+    push si
+    dec si
+    mov byte ptr [si] , 0
+    add si , 2
+    mov byte ptr [si] ,0 
+    pop si  
+    jmp decrement_once
+    check_magenta:
     cmp byte ptr [si],5
     jne decrement_once
     inc LIVES_COUNT              ; Destroy brick

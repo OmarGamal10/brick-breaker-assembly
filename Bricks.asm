@@ -14,10 +14,17 @@ COLOR_BRICK db 01h ; color of the brick
 Gap EQu 4 
 BRICKS_STATUS db 10 dup(4) ; 40 bricks
               db 10 dup(3)
-              db 4 dup(2)
-              db 2 dup(5)
-              db 4 dup(2)
-              db 10 dup(1)
+              db 2 dup(2)
+              db 1 dup(5)
+              db 1 dup(2)
+              db 1 dup(6)
+              db 2 dup(2)
+              db 1 dup(5)
+              db 2 dup(2)
+              db 4 dup(4)
+              db 1 dup(6)
+              db 5 dup(4)
+
 
 CURRENT_SCORE db 0 
 
@@ -151,6 +158,11 @@ inner_loop:
 
     ; Check brick status and set color
     mov bl, [si]                 ; Get brick status
+    cmp bl , 6 
+    jne check_status_5
+    mov COLOR_BRICK , 06h
+    jmp cont
+    check_status_5:
     cmp bl , 5
     jne check_status_4
     mov COLOR_BRICK, 05h         ; Magenta color
