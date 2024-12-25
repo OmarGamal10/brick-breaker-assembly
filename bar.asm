@@ -191,7 +191,7 @@ skip_move_right_bar2_1:
     jmp handle_input_end
 
     skip2_handle_input:
-    call far ptr WAIT_FOR_VSYNC
+    ;call far ptr WAIT_FOR_VSYNC
     ;clear the bar
     call far ptr CLEAR_BAR1
     ;move the bar to the left
@@ -209,7 +209,7 @@ skip_move_right_bar2_1:
     add ax, BAR_LENGTH
     cmp ax, 319
     jge handle_input_end ;if the bar is at the right edge, continue the loop
-    call far ptr WAIT_FOR_VSYNC
+    ;call far ptr WAIT_FOR_VSYNC
     ;clear the bar
     call far ptr CLEAR_BAR1
     ;move the bar to the right
@@ -229,7 +229,7 @@ skip_move_right_bar2_1:
     mov ax, BAR2_X
     cmp ax, 0
     jle handle_input_end;if the bar is at the left edge, continue the loop
-    call far ptr WAIT_FOR_VSYNC
+    ;call far ptr WAIT_FOR_VSYNC
     ;clear the bar
     call far ptr CLEAR_BAR2
     ;move the bar to the left
@@ -247,7 +247,7 @@ skip_move_right_bar2_1:
     add ax, BAR_LENGTH
     cmp ax, 319
     jge handle_input_end ;if the bar is at the right edge, continue the loop
-    call far ptr WAIT_FOR_VSYNC
+    ;call far ptr WAIT_FOR_VSYNC
     ;clear the bar
     call far ptr CLEAR_BAR2
     ;move the bar to the right

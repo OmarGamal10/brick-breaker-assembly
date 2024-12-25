@@ -85,6 +85,7 @@ ENDM SET_CURSOR_MACRO
 ;-----------------------------------------------------------------------------------------------------
 .model small
 .data
+    PUBLIC READY1 , READY2
     ; ball data
     EXTRN BALL_X:WORD, BALL_Y:WORD, BALL_SIZE:WORD, BALL_VELOCITY_X:WORD, BALL_VELOCITY_Y:WORD , PREV_TIME_STEP:BYTE
     ; bar data
@@ -96,7 +97,7 @@ ENDM SET_CURSOR_MACRO
 
     ; Main Menu Variables
     PUBLIC LIVES_COUNT
-    TITLE_VARIABLE db "BRICKs BREAKER - MAIN MENU$"
+    TITLE_VARIABLE db "BRICKs v23 BREAKER - MAIN MENU$"
     OPTION1_VARIABLE db "1. Start Game$"
     OPTION2_VARIABLE db "2. Chat$"
     OPTION3_VARIABLE db "3. Exit$"
