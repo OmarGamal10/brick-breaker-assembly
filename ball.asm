@@ -78,7 +78,7 @@ check_time_:
         int 21h         ; ch = hour , cl = minutes , dh = seconds , dl = 1/100 seconds
 
         cmp dl , PREV_TIME_STEP    ; Compare current time step with previous time step
-        je check_time_
+        ;je check_time_
     
     mov PREV_TIME_STEP , dl  ; Update previous time step
     ret
@@ -124,7 +124,7 @@ CHECK_COLLISION PROC FAR
     jge collision_y_down    ;check if y position is greater than 200
 
     
-    cmp BALL_Y , 0
+    cmp BALL_Y , 10
     jle collision_y_up      ;check if y position is less than 0
 
     
@@ -159,7 +159,7 @@ CHECK_COLLISION PROC FAR
     ret
 
     collision_y_up:
-        mov BALL_Y , 0          ;set y position to 0
+        mov BALL_Y , 10          ;set y position to 0
         neg BALL_VELOCITY_Y     ;negate the velocity
 
     pop ax

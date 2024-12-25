@@ -11,13 +11,13 @@
         "-c",
         "C:",
         "-c",
-        "TASM.EXE *.asm",
-        "-c",
-        "LINK.EXE MainMenu.obj Bricks.obj bar.obj ball.obj;",
-        "-c",
-        "MainMenu.exe",
-        "-c",
-        "exit"
+        "TASM.EXE MainMenu.asm",
+        // "-c",
+        // "LINK.EXE MainMenu.obj Bricks.obj bar.obj ball.obj;",
+        // "-c",
+        // "MainMenu.exe",
+        // "-c",
+        // "exit"
       ],
       "group": {
         "kind": "build",

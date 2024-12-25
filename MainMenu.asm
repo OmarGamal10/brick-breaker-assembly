@@ -1,7 +1,6 @@
 ; Author: Anas Ibrahem
 ; Description: A simple main menu for a brick breaker
 ; ; 3 5  / 3 8 /  3 11 Cursor Positions
-
 ;; Updated By : Anas Ibrahem    24 / 12 / 2024
 CLEAR_SCREEN_GAME_MACRO MACRO ;; Not used in this file
     mov ax, 0600h ; Clear Screen
@@ -87,7 +86,7 @@ ENDM SET_CURSOR_MACRO
 .model small
 .data
     ; ball data
-    EXTRN BALL_X:WORD, BALL_Y:WORD, BALL_SIZE:WORD, BALL_VELOCITY_X:WORD, BALL_VELOCITY_Y:WORD
+    EXTRN BALL_X:WORD, BALL_Y:WORD, BALL_SIZE:WORD, BALL_VELOCITY_X:WORD, BALL_VELOCITY_Y:WORD , PREV_TIME_STEP:BYTE
     ; bar data
     ; EXTRN BAR_X:WORD, BAR1_Y:WORD, BAR2_Y:WORD, BAR_LENGTH:WORD, BAR_HEIGHT:WORD, BAR_SPEED:WORD, BAR_COLOR:BYTE
     EXTRN BAR1_X:WORD, BAR2_X :WORD, BAR1_Y:WORD,BAR2_Y:WORD, BAR_LENGTH:WORD, BAR_HEIGHT:WORD, BAR_SPEED:WORD, BAR1_COLOR:BYTE , BAR2_COLOR:BYTE
@@ -111,7 +110,7 @@ ENDM SET_CURSOR_MACRO
     READY_KEY db 'r'
     READY1 db 0
     READY2 db 0
-    LIVES_COUNT db 50
+    LIVES_COUNT db 4
     temp db 0
     ; Chat Variables
     VALUE db ?
@@ -161,6 +160,55 @@ PRINT_HEART_PROC proc far
     pop cx
     ret
 PRINT_HEART_PROC endp
+UPDATE_STATS_PROC proc far
+    push ax
+    push bx
+    push cx
+    push dx
+
+    mov ax, CURRENT_SCORE
+    ;; Convert to ascii
+    aam
+    add al, '0'
+    add ah, '0'
+
+    ; Print al
+    mov temp, ah
+    mov dl, 8
+    mov dh, 0
+    call far ptr SET_CURSOR_PROC
+    mov ah, 9
+    mov cx, 1h
+    mov bl, 03h
+    int 10h
+
+    ; Print ah
+    mov al, temp
+    mov dl, 7
+    mov dh, 0
+    call far ptr SET_CURSOR_PROC
+    mov ah, 9
+    mov cx, 1h
+    mov bl, 03h
+    int 10h
+    ; Print Lives
+    mov al, LIVES_COUNT
+    add al, '0'
+    mov dl, 31
+    mov dh, 0
+    call far ptr SET_CURSOR_PROC
+    mov ah, 9
+    mov cx, 1h
+    mov bl, 04h
+    int 10h
+
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+  ret
+UPDATE_STATS_PROC ENDP
+
 
 DISPLAY_MENU_PROC proc far
     first_option:
@@ -332,7 +380,6 @@ main proc far
     mov dx, offset LIVES_MESSAGE
     call far ptr DISPLAY_TEXT_PROC
 
-
   ;; INITIALIZATION of Communication
   mov dx, 3fbh ; Line control Register
   mov al, 10000000b
@@ -340,7 +387,7 @@ main proc far
 
   ; Set up the baud rate
   mov dx, 3f8h
-  mov al, 0ch
+  mov al, 0c0h
   out dx, al
 
   mov dx, 3f9h
@@ -349,15 +396,13 @@ main proc far
 
   ; Set port configuration
   mov dx, 3fbh
-  mov al, 00011011b
+  mov al, 00011111b
   out dx, al
-
 
 outer_check_loop:
         mov ah, 01h
         int 16h
         jz check_2nd_ready_loop
-
         cmp al , READY_KEY
         jne check_2nd_ready_loop
         mov READY1, 1
@@ -366,96 +411,55 @@ outer_check_loop:
         In al, dx ; Read Line Status
         test al, 00100000b
         jz check_2nd_ready_loop ; Not empty
-
         mov dx, 3F8H ; Transmit data register
         mov al, READY_KEY ; put the key into al
         out dx, al ; sending the data
-
 check_2nd_ready_loop:
         mov dx, 3FDH ; Line Status Register
         in al, dx
         test al, 1
         jnz read_ready_from_second_player
         jmp test_ready 
-
 read_ready_from_second_player:
         mov dx, 3F8H ; Receive data register
         In al, dx ; Read the data
         cmp al, READY_KEY ;
         jne test_ready
         mov READY2, 1
-
-
 test_ready:
 cmp READY1 , 1
 jne outer_check_loop
 cmp READY2 , 1
 jne outer_check_loop
 
-
 game_loop:
-    ;;;; Start By Print Live , Score
-    call far ptr CHECK_TIME ; Check timing first
-    call far ptr MOVE_BALL ; Includes clear, update, collision, draw
-    ; Print CURRENT_SCORE
-    mov ax, CURRENT_SCORE
-    ;; Convert to ascii
-    aam
-    add al, '0'
-    add ah, '0'
-
-    ; Print al
-    mov temp, ah
-    mov dl, 8
-    mov dh, 0
-    call far ptr SET_CURSOR_PROC
-    mov ah, 9
-    mov cx, 1h
-    mov bl, 03h
-    int 10h
-
-    ; Print ah
-    mov al, temp
-    mov dl, 7
-    mov dh, 0
-    call far ptr SET_CURSOR_PROC
-    mov ah, 9
-    mov cx, 1h
-    mov bl, 03h
-    int 10h
-
-    ; Print Lives
-    ; TODO Print LIVES_COUNT when I get them ANAS IBRAHEM
-    mov al, LIVES_COUNT
-    add al, '0'
-    mov dl, 31
-    mov dh, 0
-    call far ptr SET_CURSOR_PROC
-    mov ah, 9
-    mov cx, 1h
-    mov bl, 04h
-    int 10h
-
-
     ; Start Communication and logic
     mov ah, 1 ; Check if a key is pressed
     int 16h
     jnz first_player_press_key
     jmp far ptr second_player_receive ; jump to receiving mode
-
-
     first_player_press_key:
         mov ah,0
         int 16h
 
         mov KEY, al ; ascii code in al ; TODO add more options for keys like pause
+        send_status_first_player:
+        mov dx, 3FDH ; Line Status Register
+        In al, dx ; Read Line Status
+        test al, 00100000b
+        jz second_player_receive ; Not empty
+
+        mov dx, 3F8H ; Transmit data register
+        mov al, KEY ; put the key into al
+        out dx, al ; sending the data
+
         cmp al, 'a' ; left arrow key
         je move_left_bar1
         cmp al, 'd' ; right arrow key
         je move_right_bar1
         ;cmp al , 27 ; ckeck if the key was esc
         ;je start_menu_send
-        jmp game_loop
+        jmp update_ball
 
 
     move_left_bar1:
@@ -463,7 +467,7 @@ game_loop:
         mov ax, BAR1_X
         cmp ax, 0
         jg skip2_handle_input ; if the bar is at the left edge, continue the loop
-        jmp game_loop
+        jmp update_ball
 
 
     skip2_handle_input:
@@ -477,7 +481,7 @@ game_loop:
         ; draw the bar
         call far ptr DRAW_BAR1
         call far ptr DRAW_BAR2
-        jmp send_status_first_player
+        jmp second_player_receive
 
 
     move_right_bar1:
@@ -486,7 +490,7 @@ game_loop:
         add ax, BAR_LENGTH
         cmp ax, 319
         jl skip_game_loop1
-        jmp game_loop ; if the bar is at the right edge, continue the loop
+        jmp update_ball ; if the bar is at the right edge, continue the loop
         skip_game_loop1: call far ptr WAIT_FOR_VSYNC
         ; clear the bar
         call far ptr CLEAR_BAR1
@@ -497,26 +501,14 @@ game_loop:
         ; draw the bar
         call far ptr DRAW_BAR1
         call far ptr DRAW_BAR2
-        jmp send_status_first_player
-
-    send_status_first_player:
-        mov dx, 3FDH ; Line Status Register
-        In al, dx ; Read Line Status
-        test al, 00100000b
-        jz second_player_receive ; Not empty
-
-        mov dx, 3F8H ; Transmit data register
-        mov al, KEY ; put the key into al
-        out dx, al ; sending the data
-
-    jmp game_loop
+        jmp second_player_receive
 
     second_player_receive:
         mov dx, 3FDH ; Line Status Register
         in al, dx
         test al, 1
         jnz read_from_second_player
-        jmp game_loop 
+        jmp update_ball 
 
     read_from_second_player:
         mov dx, 3F8H ; Receive data register
@@ -526,7 +518,7 @@ game_loop:
         je move_left_bar2
         cmp al, 'd' ; right arrow key
         je move_right_bar2
-        jmp game_loop
+        jmp update_ball
 
 
     move_left_bar2:
@@ -534,7 +526,7 @@ game_loop:
         mov ax, BAR2_X
         cmp ax, 0
         jg skip_game_loop2
-        jmp game_loop ; if the bar is at the left edge, continue the loop
+        jmp update_ball ; if the bar is at the left edge, continue the loop
         skip_game_loop2: call far ptr WAIT_FOR_VSYNC
         ; clear the bar
         call far ptr CLEAR_BAR2
@@ -545,7 +537,7 @@ game_loop:
         ; draw the bar
         call far ptr DRAW_BAR2
         call far ptr DRAW_BAR1
-        jmp game_loop
+        jmp update_ball
 
     move_right_bar2:
         ; check if the bar is at the right edge of the screen
@@ -553,7 +545,7 @@ game_loop:
         add ax, BAR_LENGTH
         cmp ax, 319
         jl skip_game_loop3
-        jmp game_loop ; if the bar is at the right edge, continue the loop
+        jmp update_ball ; if the bar is at the right edge, continue the loop
         skip_game_loop3: call far ptr WAIT_FOR_VSYNC
         ; clear the bar
         call far ptr CLEAR_BAR2
@@ -564,9 +556,20 @@ game_loop:
         ; draw the bar
         call far ptr DRAW_BAR2
         call far ptr DRAW_BAR1
-        jmp game_loop
-
+        jmp update_ball
+        
+        update_ball:
+        mov ah , 2ch    ; get the current time
+        int 21h         ; ch = hour , cl = minutes , dh = seconds , dl = 1/100 seconds
+        cmp dl , PREV_TIME_STEP    ; Compare current time step with previous time step
+        jne skip_game_loop_4
+        jmp game_loop ; if equal then continue the loop
+        skip_game_loop_4:
+        mov PREV_TIME_STEP , dl  ; Update previous time step
+        call far ptr MOVE_BALL
+        call far ptr UPDATE_STATS_PROC
 jmp game_loop ; stuck at game loop
+
 
 show_chat:
     call far ptr CLEAR_SCREEN_PROC
@@ -602,22 +605,6 @@ show_chat:
 
     ; start sending and receiving
     call far ptr DETECT_CHAT_PROC
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 DETECT_CHAT_PROC proc
     chat_loop:
