@@ -164,13 +164,10 @@ CHECK_COLLISION PROC FAR
 
     pop ax
     ret
-
-    
     ; Stop ball
     pause_game:
     ; mov BALL_VELOCITY_X, 0
     ; mov BALL_VELOCITY_Y, 0
-    
     ; Position cursor
     mov ah, 02h
     mov bh, 0            
@@ -333,6 +330,8 @@ CHECK_BRICKS_COLLISION PROC FAR
 
     ; Determine which brick in the row
     mov ax, BALL_X
+    cmp ax , 10 
+    jl skip_short_no_brick_collision4
     sub ax, 10                      ; Subtract INITIAL_X
     mov bx, 30                      ; Brick width + gap
     xor dx, dx
