@@ -21,9 +21,7 @@ BRICKS_STATUS db 10 dup(4) ; 40 bricks
               db 2 dup(2)
               db 1 dup(5)
               db 2 dup(2)
-              db 4 dup(4)
-              db 1 dup(6)
-              db 5 dup(4)
+              db 10 dup(1)
 
 
 CURRENT_SCORE db 0 
@@ -160,7 +158,7 @@ inner_loop:
     mov bl, [si]                 ; Get brick status
     cmp bl , 6 
     jne check_status_5
-    mov COLOR_BRICK , 06h
+    mov COLOR_BRICK , 0ch
     jmp cont
     check_status_5:
     cmp bl , 5

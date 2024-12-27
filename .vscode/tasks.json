@@ -11,7 +11,7 @@
         "-c",
         "C:",
         "-c",
-        "TASM.EXE ball.asm",
+        "TASM.EXE Bricks.asm",
         // "-c",
         // "LINK.EXE MainMenu.obj Bricks.obj bar.obj ball.obj;",
         // "-c",
