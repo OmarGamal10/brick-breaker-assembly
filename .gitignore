@@ -1,16 +1,5 @@
-# Ignore specific files
-BIN2HEX.EXE
-EXE2BIN.EXE
-BIN2HEX.EXE
-DEBUG.EXE
-EDIT.COM
-LINK.EXE
-MASM.EXE
-TASM.EXE
-TD.EXE
+# Ignore all .EXE and .OBJ files (optional)
+/*.OBJ
+/*.EXE
 
-# Ignore all .EXE files (optional)
-BALL.OBJ
-BAR.OBJ
-BRICKS.OBJ
-MAINMENU.OBJ
+.vscode/
