@@ -57,7 +57,7 @@ This game is coded in **x86 Assembly language**. It uses **BIOS interrupts** to 
   </figure>
 
   <figure style="text-align: center;">
-    <h5>Game Overview</h5>
+    <h5>Difficult Level</h5>
     <img src="https://github.com/salehahmed99/Assemblyx69/blob/main/readme-assets/gameoverview2.png" alt="Image 2" height="400px" width="812px">
   </figure>
 
