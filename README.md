@@ -47,22 +47,22 @@ This game is coded in **x86 Assembly language**. It uses **BIOS interrupts** to 
 <div style="display: flex; justify-content: space-around; align-items: center;">
 
   <figure style="text-align: center;">
-    <h5>Start Menu</h5>
+    <h3>Start Menu</h3>
     <img src="https://github.com/salehahmed99/Assemblyx69/blob/main/readme-assets/startmenu.png" alt="Image 1" height="400px" width="812px">
   </figure>
 
   <figure style="text-align: center;">
-    <h5>Game Overview</h5>
+    <h3>Game Overview</h3>
     <img src="https://github.com/salehahmed99/Assemblyx69/blob/main/readme-assets/gameoverview.png" alt="Image 2" height="400px" width="812px">
   </figure>
 
   <figure style="text-align: center;">
-    <h5>Difficult Level</h5>
+    <h3>Difficult Level</h3>
     <img src="https://github.com/salehahmed99/Assemblyx69/blob/main/readme-assets/gameoverview2.png" alt="Image 2" height="400px" width="812px">
   </figure>
 
   <figure style="text-align: center;">
-    <h5>Chat </h5>
+    <h3>Chat </h3>
     <img src="https://github.com/salehahmed99/Assemblyx69/blob/main/readme-assets/chat.png" alt="Image 3" height="400px" width="812px">
   </figure>
 
@@ -71,4 +71,4 @@ This game is coded in **x86 Assembly language**. It uses **BIOS interrupts** to 
 
 ---
 
-Thank you for playing! Let the brick-breaking begin! 🧱🎯
+### Thank you for playing! Let the brick-breaking begin! 🧱🎯
