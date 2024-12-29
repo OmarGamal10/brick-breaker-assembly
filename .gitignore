@@ -1,5 +1,6 @@
 # Ignore all .EXE and .OBJ files (optional)
 /*.OBJ
 /*.EXE
+/*.COM
 
 .vscode/
